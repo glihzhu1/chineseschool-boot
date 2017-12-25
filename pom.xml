@@ -168,11 +168,7 @@
 	    
         <!-- Repository: http://repository.primefaces.org/ -->      
         <!-- include a custom theme jar -->
-        <dependency>
-            <groupId>org.primefaces.themes</groupId>
-            <artifactId>bootstrap</artifactId>
-            <version>1.0.10</version>
-        </dependency>
+        
 	
 		<dependency>
             <groupId>com.sun.faces</groupId>
