@@ -238,18 +238,43 @@
 	</dependencies>
   
     <build>
-    	<plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-                <configuration>
+    	<pluginManagement>
+      	<plugins>
+	      <plugin>
+	        <groupId>org.springframework.boot</groupId>
+	        <artifactId>spring-boot-maven-plugin</artifactId>
+	        <configuration>
                     <!-- Eclipse: If Eclipse configured to refresh the workspace automatically,
                                   "mvn spring-boot:run" can fail in some rare cases.
                     -->
                     <addResources>false</addResources>
-                </configuration>
-            </plugin>
-        </plugins>
+            </configuration>
+	      </plugin>
+	      <!-- Compiler plugin -->
+          <plugin>
+            <groupId>org.apache.maven.plugins</groupId>
+            <artifactId>maven-compiler-plugin</artifactId>
+            <configuration>
+              <source>${java.version}</source>
+              <target>${java.version}</target>
+              <encoding>${project.build.sourceEncoding}</encoding>
+              <useIncrementalCompilation>false</useIncrementalCompilation>
+              <proc>none</proc>
+            </configuration>
+          </plugin>
+          </plugins>
+          </pluginManagement>
+
+		    <plugins>
+		       <plugin>
+		         <groupId>org.springframework.boot</groupId>
+		         <artifactId>spring-boot-maven-plugin</artifactId>
+		       </plugin>
+		       <plugin>
+		         <groupId>org.apache.maven.plugins</groupId>
+		         <artifactId>maven-compiler-plugin</artifactId>
+		       </plugin>
+		       </plugins>
     </build>
 	
 </project>
