@@ -31,6 +31,14 @@
         <primefaces.version>6.0</primefaces.version>
     </properties>
     
+    <repositories>
+        <repository>
+            <id>prime-repo</id>
+            <url>http://repository.primefaces.org</url>
+            <name>PrimeFaces Maven Repository</name>
+        </repository>
+    </repositories>
+    
     <dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -168,12 +176,18 @@
 	    
         <!-- Repository: http://repository.primefaces.org/ -->      
         <!-- include a custom theme jar -->
-        
-		<dependency>
+        <dependency>
             <groupId>org.primefaces.themes</groupId>
             <artifactId>bootstrap</artifactId>
             <version>1.0.10</version>
         </dependency>
+        <!--  
+        <dependency>
+		    <groupId>org.primefaces.extensions</groupId>
+		    <artifactId>all-themes</artifactId>
+		    <version>1.0.8</version>
+		</dependency>
+		-->
 		<dependency>
             <groupId>com.sun.faces</groupId>
             <artifactId>jsf-api</artifactId>
