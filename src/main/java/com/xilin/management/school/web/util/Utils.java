@@ -238,7 +238,7 @@ public class Utils {
 	    ResponseEntity<String> response = null;
         try {
         	response = restTemplate.exchange(uri + 
-	    	"/allusers/"+ id, HttpMethod.PUT, entity, String.class);
+	    	"/allusers/update/"+ id, HttpMethod.PUT, entity, String.class);
         } catch (Exception e) {
         	logger.error(e.getMessage());
         	e.printStackTrace();

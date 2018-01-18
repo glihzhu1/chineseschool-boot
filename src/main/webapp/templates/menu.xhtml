@@ -10,6 +10,7 @@
     <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
   </h:form>
 
+<!--  
   <form action="${request.contextPath}/j_spring_security_logout" method="post" id="logoutForm">
      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}" />
   </form>
@@ -18,7 +19,7 @@
       document.getElementById("logoutForm").submit();
     }
   </script>
-
+-->
 
   <h:panelGrid cellspacing="0" cellpadding="0" styleClass="content">
    
@@ -52,7 +53,7 @@
       
 	  <p:menuitem value="Logout: #{applicationBean.userDetails.username}" icon="ui-icon-close" 
     	rendered="#{applicationBean.userDetails != null}" 
-	 	onclick="javascript:formSubmit()"/>
+	 	action="#{applicationBean.logout}" />
     </p:megaMenu>
     
     

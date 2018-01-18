@@ -56,7 +56,7 @@ public class MySecurityConfigurer extends WebSecurityConfigurerAdapter {
 				.defaultSuccessUrl("/index.jsf")
 				.failureUrl("/error.jsf")
 			.and()
-				.logout().logoutRequestMatcher(new AntPathRequestMatcher("/j_spring_security_logout"))
+				.logout().logoutRequestMatcher(new AntPathRequestMatcher("/logout"))
 				.logoutSuccessUrl("/index").deleteCookies("JSESSIONID")
 				.invalidateHttpSession(true).permitAll();
 			//.and()

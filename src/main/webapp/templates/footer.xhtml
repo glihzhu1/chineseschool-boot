@@ -67,11 +67,17 @@
     </h:form>
   </div>
   
-  <!-- load js at bottom for faster loading , bootstrap needs > 1.9.1 
-    <h:outputScript library="webjars" name="jquery/2.1.4/jquery.min.js" target="body"/>
-     -->
-	<h:outputScript library="webjars"
+  <!-- load js at bottom for faster loading , bootstrap needs > 1.9.1 this is needed for bootstrap popup-->
+  <!-- 
+  <h:outputScript library="webjars" name="jquery/1.11.1/jquery.min.js" target="body"/>
+  <h:outputScript library="webjars"
 		name="bootstrap/3.3.6/js/bootstrap.min.js" target="body" />
 		
+  PF already bundled jquery, prefer to do below
+  <h:outputScript library="primefaces" name="jquery/jquery.js" target="body" />
+  <h:outputScript library="primefaces" name="jquery/jquery-plugins.js" target="body" />
+  <h:outputScript library="webjars"
+		name="bootstrap/3.3.6/js/bootstrap.min.js" target="body" />
+  -->	
 </ui:composition>
 </html>
