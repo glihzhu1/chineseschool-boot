@@ -174,7 +174,8 @@
           <p:commandButton id="createSaveButton" value="#{messages.label_save}" 
             oncomplete="PF('createDialogWidget').hide()"
             action="#{familyBean.persist}" update="createPanelGrid :growlForm:growl" />
-          <p:commandButton id="createCloseButton" value="#{messages.label_close}" onclick="PF('createDialogWidget').hide()" type="button" />
+          <p:commandButton id="createCloseButton" value="#{messages.label_close}" 
+            onclick="PF('createDialogWidget').hide()" type="button" />
           <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
         </h:form>
       </p:outputPanel>

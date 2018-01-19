@@ -239,8 +239,6 @@ public class ApplicationBean  implements Serializable {
         item = new DefaultMenuItem("List Family");
         item.setId("listFamilyMenuItem");
         item.setCommand("#{familyBean.displayList}");
-        //item.setValueExpression("value", expressionFactory.createValueExpression(elContext, "#{messages.label_list}", String.class));
-        //item.setActionExpression(expressionFactory.createMethodExpression(elContext, "#{familyBean.displayList}", String.class, new Class[0]));
         item.setIcon("ui-icon ui-icon-folder-open");
         item.setAjax(false);
         item.setAsync(false);
@@ -349,6 +347,7 @@ public class ApplicationBean  implements Serializable {
         
         
         classMenuModel.addElement(classSubmenu);
+        
         /*
         submenu = new Submenu();
         submenu.setId("registrationSubmenu");

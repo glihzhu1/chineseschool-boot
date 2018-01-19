@@ -182,7 +182,8 @@
       	  
       	  <p:commandButton id="createSaveButton" value="#{messages.label_save}" 
       	    process="createForm" action="#{semesterBean.persist}" update=":dataForm:data createPanelGrid :growlForm:growl" />
-          <p:commandButton id="createCloseButton" value="#{messages.label_close}" onclick="PF('createDialogWidget').hide()" type="button" />
+          <p:commandButton id="createCloseButton" value="#{messages.label_close}" immediate="true"
+            action="#{semesterBean.findAllSemesters}" oncomplete="PF('createDialogWidget').hide()" />
           <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
         </h:form>
       </p:outputPanel>
