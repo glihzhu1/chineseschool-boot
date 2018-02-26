@@ -35,6 +35,7 @@ public class MyLazyFamilyDataModel extends LazyDataModel<Family> {
 	}
 
 	public MyLazyFamilyDataModel(FamilyRepository familyRepository, String strSearchTerm, Map<String, String> searchDropdownMap) {
+		//super();
 		this.familyRepository = familyRepository;
 		this.strSearchTerm = strSearchTerm;
 		//this.searchDropdownMap = searchDropdownMap;

@@ -58,15 +58,15 @@
         	<p:column headerText="Book" sortBy="#{semestercourse.bookitemid.bookname}"
        			filterMatchMode="contains" filterBy="#{semestercourse.bookitemid.bookname}">
             	<p:commandLink value="#{semestercourse.bookitemid ne null? semestercourse.bookitemid.bookname : ''}"
-            		update="bookitemDetailrow" 
+            		update="bookitemDetailrow" style="color: blue"
             		oncomplete="PF('bookitemOProw').show('#{component.clientId}')">
             		<f:setPropertyActionListener value="#{semestercourse}" target="#{semestercourseBean.semestercourse}" />
             	</p:commandLink>
        		</p:column>
        		<p:column headerText="Teacher" sortBy="#{semestercourse.teacherid.lastname}" 
         		filterMatchMode="contains" filterBy="#{semestercourse.teacherid.lastname}">
-            	<p:commandLink value="#{semestercourse.teacherid.lastname}, #{semestercourse.teacherid.firstname}"
-            		update="teacherDetailrow" 
+            	<p:commandLink value="#{semestercourse.teacherid.firstname} #{semestercourse.teacherid.lastname}"
+            		update="teacherDetailrow" style="color: blue"
             		oncomplete="PF('teacherOProw').show('#{component.clientId}')">
             		<f:setPropertyActionListener value="#{semestercourse}" target="#{semestercourseBean.semestercourse}" />
             	</p:commandLink>
@@ -144,7 +144,7 @@
     					listener="#{semestercourseBean.onChangeSemesterSelection}" />
 		  <f:selectItems value="#{semestercourseBean.semesterDropdown}" />
 	    </p:selectOneMenu>
-	    <p:outputLabel value="switch semester here, it is rarely needed!" 
+	    <p:outputLabel value="Switch semester here, it is rarely needed!" 
 	      style="color: red;"></p:outputLabel>
 	  </p:panelGrid>		
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -226,6 +226,7 @@
 		 					<h:selectOneListbox size="1" id="teacherDropdown" 
 		 						valueChangeListener="#{semestercourseBean.onChangeTeacherId}"
 		 						value="#{semestercourseBean.teacherId}" >
+		 						<f:selectItem itemLabel="Please Select" itemValue=""/>
 								<f:selectItems value="#{semestercourseBean.teacherDropdown}" />
 							</h:selectOneListbox>
 							<p:spacer width="5" height="10"></p:spacer>
@@ -240,6 +241,7 @@
 	 						<h:selectOneListbox size="1" id="bookDropdown" 
 	 							valueChangeListener="#{semestercourseBean.onChangeBookitemId}"
 	 							value="#{semestercourseBean.bookitemId}" >
+	 							<f:selectItem itemLabel="Please Select" itemValue=""/>
 								<f:selectItems value="#{semestercourseBean.bookitemDropdown}" />
 							</h:selectOneListbox>
 							<p:spacer width="5" height="10"></p:spacer>
@@ -294,7 +296,7 @@
       				<h:panelGrid columns="1" styleClass="dialog" columnClasses="col1" >
 	          			<p:editor widgetVar="note" value="#{semestercourseBean.semestercourse.note}" 
 	          				height="150" width="500"
-	          				style="margin-bottom:10px" maxlength="400" 
+	          				style="margin-bottom:10px"
 	          				placeholder="Enter your content">
 			    		</p:editor>
       				</h:panelGrid>
@@ -440,6 +442,7 @@
 		 					<h:selectOneListbox size="1" id="teacherDropdownedit" 
 		 						valueChangeListener="#{semestercourseBean.onChangeTeacherId}"
 		 						value="#{semestercourseBean.teacherId}" >
+		 						<f:selectItem itemLabel="Please Select" itemValue=""/>
 								<f:selectItems value="#{semestercourseBean.teacherDropdown}" />
 							</h:selectOneListbox>
 							<p:spacer width="5" height="10"></p:spacer>
@@ -454,6 +457,7 @@
 	 						<h:selectOneListbox size="1" id="bookDropdownedit" 
 	 							valueChangeListener="#{semestercourseBean.onChangeBookitemId}"
 	 							value="#{semestercourseBean.bookitemId}" >
+	 							<f:selectItem itemLabel="Please Select" itemValue=""/>
 								<f:selectItems value="#{semestercourseBean.bookitemDropdown}" />
 							</h:selectOneListbox>
 							<p:spacer width="5" height="10"></p:spacer>
@@ -508,7 +512,7 @@
       				<h:panelGrid columns="1" styleClass="dialog" columnClasses="col1" >
 	          			<p:editor widgetVar="noteedit" value="#{semestercourseBean.semestercourse.note}" 
 	          				height="150" width="500"
-	          				style="margin-bottom:10px" maxlength="400" 
+	          				style="margin-bottom:10px" 
 	          				placeholder="Enter your content">
 			    		</p:editor>
       				</h:panelGrid>
@@ -533,13 +537,13 @@
 		          <h:outputText value="Detail" />
 		        </f:facet>
 		 		<h:outputText value="Id:" />
-		        <h:outputText value="#{semestercourseBean.courseinfo.id}" />
+		        <h:outputText value="#{semestercourseBean.semestercourse.courseinfoid.id}" />
 		 		<h:outputText value="Code" />
-		        <h:outputText value="#{semestercourseBean.courseinfo.coursecode}" />
+		        <h:outputText value="#{semestercourseBean.semestercourse.courseinfoid.coursecode}" />
 		        <h:outputText value="Name" />
-		        <h:outputText value="#{semestercourseBean.courseinfo.coursename}" />
+		        <h:outputText value="#{semestercourseBean.semestercourse.courseinfoid.coursename}" />
 		        <h:outputText value="Grade" />
-		        <h:outputText value="#{semestercourseBean.courseinfo.coursegrade}" />
+		        <h:outputText value="#{semestercourseBean.semestercourse.courseinfoid.coursegrade}" />
 		 	  </p:panelGrid>
 		    </p:outputPanel>
 		  </p:overlayPanel>

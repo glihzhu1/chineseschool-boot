@@ -8,7 +8,7 @@
 		<h:outputText value="Family due: $#{familyBean.familyDue}">
 	    </h:outputText>
 		<p:spacer width="5"></p:spacer>
-	    <p:commandLink value="More Detail"
+	    <p:commandLink value="More Detail" style="color: blue"
 	      update=":processPaymentForm:billingDetailrow" 
 	      oncomplete="PF('billingDetailOP').show('#{component.clientId}')">
 	    </p:commandLink>
@@ -82,7 +82,7 @@
           	</h:outputText>
       	</p:column>
       	<p:column headerText="Teacher">
-          	<p:commandLink rendered="#{familytransaction.transactiontype eq 'RG'}"
+          	<p:commandLink rendered="#{familytransaction.transactiontype eq 'RG'}" style="color: blue"
           		value="#{familytransaction.semestercourseid.teacherid.lastname}, #{familytransaction.semestercourseid.teacherid.firstname}"
           		update=":processPaymentForm:teacherDetailrow" 
           		oncomplete="PF('teacherOProw').show('#{component.clientId}')">
@@ -97,13 +97,13 @@
       	<p:column headerText="Book - Price" styleClass="action-column">
       		<p:commandLink rendered="#{familytransaction.transactiontype eq 'RG' and familytransaction.semestercourseid.bookitemid ne null}"
           		value="#{familytransaction.semestercourseid.bookitemid.bookname} - $#{familytransaction.semestercourseid.bookitemid.bookprice}"
-          		update=":processPaymentForm:bookitemDetailrow" 
+          		update=":processPaymentForm:bookitemDetailrow" style="color: blue"
           		oncomplete="PF('bookitemOProw').show('#{component.clientId}')">
           		<f:setPropertyActionListener value="#{familytransaction.semestercourseid.bookitemid}" target="#{familyBean.bookitem}" />
           	</p:commandLink>
           	<p:commandLink rendered="#{familytransaction.transactiontype eq 'BK'}"
           		value="#{familytransaction.bookitemid.bookname} - $#{familytransaction.bookitemid.bookprice}"
-          		update=":processPaymentForm:bookitemDetailrow" 
+          		update=":processPaymentForm:bookitemDetailrow" style="color: blue"
           		oncomplete="PF('bookitemOProw').show('#{component.clientId}')">
           		<f:setPropertyActionListener value="#{familytransaction.bookitemid}" target="#{familyBean.bookitem}" />
           	</p:commandLink>

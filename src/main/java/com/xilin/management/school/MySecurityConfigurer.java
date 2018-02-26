@@ -33,8 +33,8 @@ public class MySecurityConfigurer extends WebSecurityConfigurerAdapter {
     public void configure(AuthenticationManagerBuilder builder) throws Exception {
 		builder.inMemoryAuthentication()
 			.withUser("admin").password("admin").roles("XILINADMIN");
-		builder.inMemoryAuthentication()
-			.withUser("family").password("family").roles("XILINFAMILY");
+		//builder.inMemoryAuthentication()
+		//	.withUser("family").password("family").roles("XILINFAMILY");
 		/*builder.inMemoryAuthentication()
 			.withUser("manu").password("f13bb1bed03db9d68a7d9a48aafeec78").roles("NAMADManu");*/
 		

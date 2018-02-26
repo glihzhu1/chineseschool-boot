@@ -89,13 +89,9 @@ public class SemestercourseBean implements Serializable {
 		FacesContextUtils.getRequiredWebApplicationContext(FacesContext.getCurrentInstance())
 		.getAutowireCapableBeanFactory().autowireBean(this);
 		
-		// populate all dropdowns
-		semesterDropdown = myCustomSchoolService.queryTop2SemesterItems();
-		courseinfoDropdown = myCustomSchoolService.queryAllCourseinformationItems();
-		teacherDropdown = myCustomSchoolService.queryTeacherItems();
-		bookitemDropdown = myCustomSchoolService.queryAllBookitemItems();
-		
-		latestSemester = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
+		// get latestsemester -- should query when needed.
+		/*		
+		latestSemester = semesterRepository.findFirstByOrderByRegisterstartdateDesc();*/
 	
     }
 
@@ -106,19 +102,25 @@ public class SemestercourseBean implements Serializable {
 	public void onChangeCourseinfoId(ValueChangeEvent e) {
 		courseinfoId = (Integer)e.getNewValue();
 		
-		courseinfo = courseinformationRepository.findOne(courseinfoId);
+		if(courseinfoId != null) {
+			courseinfo = courseinformationRepository.findOne(courseinfoId);
+		}
 	}
 
 	public void onChangeTeacherId(ValueChangeEvent e) {
 		teacherId = (Integer)e.getNewValue();
 		
-		teacher = personnelRepository.findOne(teacherId);
+		if(teacherId != null) {
+			teacher = personnelRepository.findOne(teacherId);
+		}
 	}
 	
 	public void onChangeBookitemId(ValueChangeEvent e) {
 		bookitemId = (Integer)e.getNewValue();
 		
-		bookitem = bookitemRepository.findOne(bookitemId);
+		if(bookitemId != null) {
+			bookitem = bookitemRepository.findOne(bookitemId);
+		}
 	}
 	
 	public void onChangeSemesterSelection() {
@@ -163,6 +165,22 @@ public class SemestercourseBean implements Serializable {
     }
 
 	public String onEdit() {
+		prepareClassNeededDropdowns();
+		
+		if(semestercourse.getCourseinfoid() != null) {
+			courseinfo = semestercourse.getCourseinfoid();
+			courseinfoId = courseinfo.getId();
+		}
+		
+		if(semestercourse.getTeacherid() != null) {
+			teacher = semestercourse.getTeacherid();
+			teacherId = teacher.getId();
+		}
+		
+		if(semestercourse.getBookitemid() != null) {
+			bookitem = semestercourse.getBookitemid();
+			bookitemId = semestercourse.getBookitemid().getId();
+		}
 		
         return null;
     }
@@ -177,7 +195,11 @@ public class SemestercourseBean implements Serializable {
 
 	public String displayList() {
         createDialogVisible = false;
+        latestSemester = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
         findAllSemestercourses();
+        
+        semesterDropdown = myCustomSchoolService.queryTop2SemesterItems();
+        
         return "/pages/admin/semestercourse";
     }
 
@@ -191,6 +213,10 @@ public class SemestercourseBean implements Serializable {
         semestercourse.setDiscountamount(new BigDecimal(0));
         semestercourse.setSemesterid(latestSemester);
         
+        prepareClassNeededDropdowns();
+		
+		latestSemester = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
+		
         createDialogVisible = true;
         return "/pages/admin/semestercourse";
     }
@@ -200,7 +226,6 @@ public class SemestercourseBean implements Serializable {
         String loginUsername = Utils.retrieveLoginUsername();
         //Calendar calendar = GregorianCalendar.getInstance();
         //calendar.setTime(startDate);
-
         
         if (semestercourse.getId() != null) {
         	//Check whether the semestercourse possibly already existing??
@@ -263,6 +288,13 @@ public class SemestercourseBean implements Serializable {
         reset();
     }
 
+	private void prepareClassNeededDropdowns() {
+		semesterDropdown = myCustomSchoolService.queryTop2SemesterItems();
+		courseinfoDropdown = myCustomSchoolService.queryAllCourseinformationItems();
+		teacherDropdown = myCustomSchoolService.queryTeacherItems();
+		bookitemDropdown = myCustomSchoolService.queryAllBookitemItems();
+	}
+	
 	private void handleClassRelatedData() {
 		if(courseinfoId != null) {
     		Courseinformation classCourseinformation = courseinformationRepository.findOne(courseinfoId);
@@ -276,11 +308,18 @@ public class SemestercourseBean implements Serializable {
         		semestercourse.setTeacherid(classTeacher);
         	}
     	}
+    	else {
+    		semestercourse.setTeacherid(null);
+    	}
+    	
     	if(bookitemId != null) {
     		Bookitem classBookitem = bookitemRepository.findOne(bookitemId);
         	if(classBookitem != null) {
         		semestercourse.setBookitemid(classBookitem);
         	}
+    	}
+    	else {
+    		semestercourse.setBookitemid(null);
     	}
 	}
 	public List<Semestercourse> getFilteredSemestercourses() {

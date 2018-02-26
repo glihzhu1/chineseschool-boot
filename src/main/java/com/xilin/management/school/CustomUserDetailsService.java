@@ -10,6 +10,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.AuthorityUtils;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -92,10 +93,10 @@ public class CustomUserDetailsService implements UserDetailsService {
     }
     
     private Collection<? extends GrantedAuthority> getAuthorities(String role) {
-    	List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-        
+    	/*List<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
         authorities.add(new SimpleGrantedAuthority(role));
-       
-        return authorities;
+        return authorities;*/
+        
+        return AuthorityUtils.commaSeparatedStringToAuthorityList(role);
     }
 }

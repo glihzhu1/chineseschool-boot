@@ -166,8 +166,20 @@ public class PersonnelBean implements Serializable {
 	public String persistUserChangePassword() {
         String message = "";
         String pwd = personnelPassword;
-        //String loginId = personnel.getLoginId();
         
+        //Check whether the external user id exist thru REST
+  		if(!Utils.checkUserExternalIdExistJson(personnel.getExternaluserid(), uri, apiusername, apipassword)){
+  			//create the user
+  			TransientUser auser = Utils.createUserJson(uri, apiusername, apipassword, personnel.getLoginId(), pwd, 
+  					personnel.getEmail(), Utils.retrieveRoleBasedOnType(personnel.getType()));
+  			if(auser != null) {
+  				personnel.setExternaluserid(auser.getId());
+  				personnel.setUpdatedBy(Utils.retrieveLoginUsername());
+  				personnel.setUpdatedtime(GregorianCalendar.getInstance());
+  				personnelRepository.save(personnel);
+  			}
+  		}
+  		
         // REST update the user site
         if(Utils.updateUserPwdJson(personnel.getExternaluserid(), uri, apiusername, apipassword, pwd)){
         	message = "message_successfully_updated";
@@ -207,6 +219,16 @@ public class PersonnelBean implements Serializable {
     			return null;
 			}
 			
+			//Check whether the external user id exist thru REST
+			if(!Utils.checkUserExternalIdExistJson(personnel.getExternaluserid(), uri, apiusername, apipassword)){
+				//create the user
+				TransientUser auser = Utils.createUserJson(uri, apiusername, apipassword, personnel.getLoginId(), Utils.INVALID_PWD, 
+						personnel.getEmail(), Utils.retrieveRoleBasedOnType(personnel.getType()));
+				if(auser != null) {
+					personnel.setExternaluserid(auser.getId());
+				}
+			}
+			
 			//Also update the user information thru REST (loginId and email)
 			if(Utils.updateUserJson(personnel.getExternaluserid(), uri, apiusername, apipassword,
 					personnel.getLoginId().trim(), personnel.getEmail().trim())){
@@ -238,7 +260,7 @@ public class PersonnelBean implements Serializable {
     				}
     				
         			TransientUser auser = Utils.createUserJson(uri, apiusername, apipassword, personnelLogin, personnelPassword, 
-        						personnel.getEmail(), Utils.ROLE_XILINTEACHER);
+        						personnel.getEmail(), Utils.retrieveRoleBasedOnType(personnel.getType()));
         			if(auser != null) {
 	        			personnel.setExternaluserid(auser.getId());
 	        			personnel.setLoginId(auser.getLoginId());

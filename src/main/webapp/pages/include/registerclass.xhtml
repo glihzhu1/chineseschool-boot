@@ -31,7 +31,7 @@
         	<p:column headerText="Book - Price" styleClass="action-column">
             	<p:commandLink rendered="#{familytransaction.semestercourseid.bookitemid ne null}"
             		value="#{familytransaction.semestercourseid.bookitemid.bookname} - $#{familytransaction.semestercourseid.bookitemid.bookprice}"
-            		update=":regiterStudentForm:bookitemDetailrow" 
+            		update=":regiterStudentForm:bookitemDetailrow" style="color: blue"
             		oncomplete="PF('bookitemOProw').show('#{component.clientId}')">
             		<f:setPropertyActionListener value="#{familytransaction.semestercourseid.bookitemid}" target="#{familyBean.bookitem}" />
             	</p:commandLink>
@@ -56,7 +56,7 @@
        		</p:column>
        		<p:column headerText="Teacher">
             	<p:commandLink value="#{familytransaction.semestercourseid.teacherid.lastname}, #{familytransaction.semestercourseid.teacherid.firstname}"
-            		update=":regiterStudentForm:teacherDetailrow" 
+            		update=":regiterStudentForm:teacherDetailrow"  style="color: blue"
             		oncomplete="PF('teacherOProw').show('#{component.clientId}')">
             		<f:setPropertyActionListener value="#{familytransaction.semestercourseid}" target="#{familyBean.semestercourse}" />
             	</p:commandLink>
@@ -125,7 +125,7 @@
         	<p:column headerText="Book" sortBy="#{semestercourse.bookitemid.bookname}"
        			filterMatchMode="contains" filterBy="#{semestercourse.bookitemid.bookname}">
             	<p:commandLink value="#{semestercourse.bookitemid ne null? semestercourse.bookitemid.bookname : ''}"
-            		update=":regiterStudentForm:bookitemDetailrow" 
+            		update=":regiterStudentForm:bookitemDetailrow"  style="color: blue"
             		oncomplete="PF('bookitemOProw').show('#{component.clientId}')">
             		<f:setPropertyActionListener value="#{semestercourse.bookitemid}" target="#{familyBean.bookitem}" />
             	</p:commandLink>
@@ -133,7 +133,7 @@
        		<p:column headerText="Teacher" sortBy="#{semestercourse.teacherid.lastname}" 
         		filterMatchMode="contains" filterBy="#{semestercourse.teacherid.lastname}">
             	<p:commandLink value="#{semestercourse.teacherid.lastname}, #{semestercourse.teacherid.firstname}"
-            		update=":regiterStudentForm:teacherDetailrow" 
+            		update=":regiterStudentForm:teacherDetailrow"  style="color: blue"
             		oncomplete="PF('teacherOProw').show('#{component.clientId}')">
             		<f:setPropertyActionListener value="#{semestercourse}" target="#{familyBean.semestercourse}" />
             	</p:commandLink>

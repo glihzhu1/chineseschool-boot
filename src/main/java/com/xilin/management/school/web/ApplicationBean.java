@@ -24,11 +24,15 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.apache.log4j.Logger;
+import org.primefaces.model.LazyDataModel;
+import org.primefaces.model.SortOrder;
 import org.primefaces.model.menu.DefaultMenuItem;
 import org.primefaces.model.menu.DefaultMenuModel;
 import org.primefaces.model.menu.DefaultSubMenu;
 import org.primefaces.model.menu.MenuModel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
@@ -38,6 +42,8 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Component;
 
+import com.xilin.management.school.model.Family;
+import com.xilin.management.school.model.FamilyRepository;
 import com.xilin.management.school.web.util.Utils;
 
 //@ManagedBean
@@ -49,7 +55,7 @@ public class ApplicationBean  implements Serializable {
 	
 	private static final long serialVersionUID = 1L;
 	
-	private static final Logger logger = Logger.getLogger(ApplicationBean.class);
+	private static final Logger logger = LoggerFactory.getLogger(ApplicationBean.class);
 	
 	private String username;
 	
@@ -61,6 +67,11 @@ public class ApplicationBean  implements Serializable {
     
     private UserDetails userDetails;
     
+    @Autowired
+    FamilyRepository familyRepository;
+    
+    private LazyDataModel<Family> familyLazyModel;
+	
     public UserDetails getUserDetails() {
 		return userDetails;
 	}
@@ -118,6 +129,9 @@ public class ApplicationBean  implements Serializable {
 	        	//Collection<?extends GrantedAuthority> granted = auth.getAuthorities();
 	    		if (hasRole(auth, Utils.ROLE_XILINADMIN))
 	    		{
+	    			familyLazyModel = new MyLazyFamilyDataModel(familyRepository, "", null);
+	    			//familyLazyModel.load(0, 15, Utils.DEFAULT_FAMILY_SORT_FIELD, SortOrder.ASCENDING, null);
+	    			
 	    			strRedirect = "/pages/admin/main";
 	    		}
 	    		else if (hasRole(auth, Utils.ROLE_XILINFAMILY))
@@ -348,78 +362,6 @@ public class ApplicationBean  implements Serializable {
         
         classMenuModel.addElement(classSubmenu);
         
-        /*
-        submenu = new Submenu();
-        submenu.setId("registrationSubmenu");
-        submenu.setLabel("Registration");
-        item = new MenuItem();
-        item.setId("createRegistrationMenuItem");
-        item.setValueExpression("value", expressionFactory.createValueExpression(elContext, "#{messages.label_create}", String.class));
-        item.setActionExpression(expressionFactory.createMethodExpression(elContext, "#{registrationBean.displayCreateDialog}", String.class, new Class[0]));
-        item.setIcon("ui-icon ui-icon-document");
-        item.setAjax(false);
-        item.setAsync(false);
-        item.setUpdate(":dataForm:data");
-        submenu.getChildren().add(item);
-        item = new MenuItem();
-        item.setId("listRegistrationMenuItem");
-        item.setValueExpression("value", expressionFactory.createValueExpression(elContext, "#{messages.label_list}", String.class));
-        item.setActionExpression(expressionFactory.createMethodExpression(elContext, "#{registrationBean.displayList}", String.class, new Class[0]));
-        item.setIcon("ui-icon ui-icon-folder-open");
-        item.setAjax(false);
-        item.setAsync(false);
-        item.setUpdate(":dataForm:data");
-        submenu.getChildren().add(item);
-        menuModel.addSubmenu(submenu);
-        
-        submenu = new Submenu();
-        submenu.setId("semesterSubmenu");
-        submenu.setLabel("Semester");
-        item = new MenuItem();
-        item.setId("createSemesterMenuItem");
-        item.setValueExpression("value", expressionFactory.createValueExpression(elContext, "#{messages.label_create}", String.class));
-        item.setActionExpression(expressionFactory.createMethodExpression(elContext, "#{semesterBean.displayCreateDialog}", String.class, new Class[0]));
-        item.setIcon("ui-icon ui-icon-document");
-        item.setAjax(false);
-        item.setAsync(false);
-        item.setUpdate(":dataForm:data");
-        submenu.getChildren().add(item);
-        item = new MenuItem();
-        item.setId("listSemesterMenuItem");
-        item.setValueExpression("value", expressionFactory.createValueExpression(elContext, "#{messages.label_list}", String.class));
-        item.setActionExpression(expressionFactory.createMethodExpression(elContext, "#{semesterBean.displayList}", String.class, new Class[0]));
-        item.setIcon("ui-icon ui-icon-folder-open");
-        item.setAjax(false);
-        item.setAsync(false);
-        item.setUpdate(":dataForm:data");
-        submenu.getChildren().add(item);
-        menuModel.addSubmenu(submenu);
-        
-        submenu = new Submenu();
-        submenu.setId("studentSubmenu");
-        submenu.setLabel("Student");
-        item = new MenuItem();
-        item.setId("createStudentMenuItem");
-        item.setValueExpression("value", expressionFactory.createValueExpression(elContext, "#{messages.label_create}", String.class));
-        item.setActionExpression(expressionFactory.createMethodExpression(elContext, "#{studentBean.displayCreateDialog}", String.class, new Class[0]));
-        item.setIcon("ui-icon ui-icon-document");
-        item.setAjax(false);
-        item.setAsync(false);
-        item.setUpdate(":dataForm:data");
-        submenu.getChildren().add(item);
-        item = new MenuItem();
-        item.setId("listStudentMenuItem");
-        item.setValueExpression("value", expressionFactory.createValueExpression(elContext, "#{messages.label_list}", String.class));
-        item.setActionExpression(expressionFactory.createMethodExpression(elContext, "#{studentBean.displayList}", String.class, new Class[0]));
-        item.setIcon("ui-icon ui-icon-folder-open");
-        item.setAjax(false);
-        item.setAsync(false);
-        item.setUpdate(":dataForm:data");
-        submenu.getChildren().add(item);
-        menuModel.addSubmenu(submenu);
-        
-        
-        */
     }
 
 	public MenuModel getMenuModel() {
@@ -438,6 +380,22 @@ public class ApplicationBean  implements Serializable {
         return "School";
     }
 	
+	public FamilyRepository getFamilyRepository() {
+		return familyRepository;
+	}
+
+	public void setFamilyRepository(FamilyRepository familyRepository) {
+		this.familyRepository = familyRepository;
+	}
+
+	public LazyDataModel<Family> getFamilyLazyModel() {
+		return familyLazyModel;
+	}
+
+	public void setFamilyLazyModel(LazyDataModel<Family> familyLazyModel) {
+		this.familyLazyModel = familyLazyModel;
+	}
+
 	private void reset() {
 		this.userEmail = "";
 		this.username = "";

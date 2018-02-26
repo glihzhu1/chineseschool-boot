@@ -19,7 +19,7 @@ import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.http.HttpServletRequest;
 
-import org.apache.log4j.Logger;
+import org.slf4j.Logger;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.ToggleEvent;
@@ -28,6 +28,7 @@ import org.primefaces.model.DashboardModel;
 import org.primefaces.model.DefaultDashboardColumn;
 import org.primefaces.model.DefaultDashboardModel;
 import org.primefaces.model.LazyDataModel;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,7 +67,7 @@ import com.xilin.management.school.web.util.Utils;
 @Scope("session")
 public class FamilyBean implements Serializable {
 
-	private static final Logger logger = Logger.getLogger(FamilyBean.class);
+	private static final Logger logger = LoggerFactory.getLogger(FamilyBean.class);
 	
 	@Autowired
     FamilyRepository familyRepository;
@@ -304,6 +305,19 @@ public class FamilyBean implements Serializable {
         String pwd = familyPassword;
         //String loginId = family.getLoginId();
         
+        //Check whether the external user id exist thru REST
+		if(!Utils.checkUserExternalIdExistJson(family.getExternaluserid(), uri, apiusername, apipassword)){
+			//create the user
+			TransientUser auser = Utils.createUserJson(uri, apiusername, apipassword, family.getLoginId(), pwd, 
+					family.getEmail(), Utils.ROLE_XILINFAMILY);
+			if(auser != null) {
+				family.setExternaluserid(auser.getId());
+				family.setUpdatedBy(Utils.retrieveLoginUsername());
+    			family.setUpdatedtime(GregorianCalendar.getInstance());
+				familyRepository.save(family);
+			}
+		}
+		
         // REST update the user site
         if(Utils.updateUserPwdJson(family.getExternaluserid(), uri, apiusername, apipassword, pwd)){
         	message = "message_successfully_updated";
@@ -348,6 +362,16 @@ public class FamilyBean implements Serializable {
     					"More than one Family with the provided email has existed!", "");
 				FacesContext.getCurrentInstance().addMessage("editForm:familyemailedit", facesMessage);
     			return null;
+			}
+			
+			//Check whether the external user id exist thru REST
+			if(!Utils.checkUserExternalIdExistJson(family.getExternaluserid(), uri, apiusername, apipassword)){
+				//create the user
+				TransientUser auser = Utils.createUserJson(uri, apiusername, apipassword, family.getLoginId(), Utils.INVALID_PWD, 
+						family.getEmail(), Utils.ROLE_XILINFAMILY);
+				if(auser != null) {
+					family.setExternaluserid(auser.getId());
+				}
 			}
 			
 			//Also update the user information thru REST (loginId and email)
@@ -420,8 +444,8 @@ public class FamilyBean implements Serializable {
             message = "message_successfully_created";
         }
         RequestContext context = RequestContext.getCurrentInstance();
-        //context.execute("PF('createDialogWidget').hide()");
-        //context.execute("PF('editDialogWidget').hide()");
+        context.execute("PF('createDialogWidget').hide()");
+        context.execute("PF('editDialogWidget').hide()");
         
         FacesMessage facesMessage = MessageFactory.getMessage(message, "Family");
         FacesContext.getCurrentInstance().addMessage(null, facesMessage);
@@ -621,7 +645,8 @@ public class FamilyBean implements Serializable {
 					else {
 						registeredCls.setSelectedbook(false);
 					}
-					continue;
+					//continue;
+					break;
 				}
 			}
 			//default order book for all class with book
@@ -1025,7 +1050,8 @@ public class FamilyBean implements Serializable {
 
 	private boolean clsRegisteredAlready(Semestercourse cls, List<Familytransaction> registeredFamilytransactions) {
 		for(Familytransaction rgs : registeredFamilytransactions) {
-			if(rgs.getSemestercourseid().getId()==cls.getId()) {
+			if(rgs.getSemestercourseid().getId().intValue()==cls.getId().intValue() &&
+					rgs.getSemesterid().getId().intValue() == cls.getSemesterid().getId().intValue()) {
 				return true;
 			}
 		}

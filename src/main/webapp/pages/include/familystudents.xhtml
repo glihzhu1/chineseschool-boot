@@ -5,6 +5,7 @@
 	xmlns:p="http://primefaces.org/ui"
 	xmlns:pe="http://primefaces.org/ui/extensions">
 	
+	<!-- used by family/main and admin/family -->
 	<h:form prependId="false" id="growlForm">
       <p:growl id="growl" showDetail="false" />
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -146,86 +147,7 @@
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     </h:form>
      
-            
-	<p:dialog id="regiterStudentDialog" header="Register Class for #{familyBean.student.lastname}, #{familyBean.student.firstname} - #{familyBean.student.id}"
-      modal="true" widgetVar="regiterStudentDialogWidget" appendTo="@(body)"
-      dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
-      <p:outputPanel id="regiterStudentPanel">
-        <h:form id="regiterStudentForm" enctype="multipart/form-data">
-          <p:panelGrid id="regiterStudentPanelGrid" columns="1" styleClass="dialog">
-			<ui:include src="../include/registerclass.xhtml" />
-		  </p:panelGrid>
-	      
-	      <p:commandButton value="Confirm Selection" action="#{familyBean.regiterStudent}" update="regiterStudentPanelGrid :growlForm:growl" />
-          <p:commandButton value="#{messages.label_close}" onclick="PF('regiterStudentDialogWidget').hide()" type="button" />
-          
-          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-        </h:form>
-      </p:outputPanel>
-    </p:dialog>
-    <p:dialog id="editStudentDialog" header="#{messages.label_edit} Student" 
-       modal="true" widgetVar="editStudentDialogWidget" appendTo="@(body)"
-       dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
-      <p:outputPanel id="editStudentPanel">
-        <h:form id="editStudentForm" enctype="multipart/form-data">
-          <h:panelGrid id="editStudentPanelGrid" columns="1" styleClass="dialog" columnClasses="col1" >
-            <h:panelGrid columns="5" styleClass="dialog" columnClasses="col1,col1,col1,col1,col1" >
-	          	<h:panelGrid columns="3" styleClass="dialog" columnClasses="col1,col2,col3" >
-		          	<h:inputText id="studenteditfirstname" value="#{familyBean.student.firstname}"
-		          		requiredMessage="First name is required" required="true"/>
-		      		<p:watermark for="studenteditfirstname" value="First Name"/>
-		            <p:message for="studenteditfirstname"></p:message>
-	            </h:panelGrid>
-	            <p:spacer width="10" height="10"></p:spacer>
-	            <h:panelGrid columns="3" styleClass="dialog" columnClasses="col1,col2,col3" >
-		          	<h:inputText id="studenteditlastname" value="#{familyBean.student.lastname}"
-		          		requiredMessage="Last name is required" required="true"/>
-		      		<p:watermark for="studenteditlastname" value="Last Name"/>
-		            <p:message for="studenteditlastname"></p:message>
-	            </h:panelGrid>
-	            <p:spacer width="10" height="10"></p:spacer>
-	            <h:panelGrid columns="2" styleClass="dialog" columnClasses="col1,col2" >
-		          	<h:inputText id="studenteditchinesename" value="#{familyBean.student.chinesename}"/>
-		      		<p:watermark for="studenteditchinesename" value="Chinese Name"/>
-	            </h:panelGrid>
-      		</h:panelGrid>
-      		<br/>
-      		
-      		
-      		<h:panelGrid columns="3" styleClass="dialog">
-      			<h:outputText value="Active? " />
-      			<p:spacer width="10" height="10"></p:spacer>
-        		<p:selectBooleanCheckbox value="#{familyBean.student.active}" />
-        	</h:panelGrid>
-        	<br/>
-        	
-      		<h:panelGrid columns="1" styleClass="dialog" columnClasses="col1" >
-	          	<h:outputText value="Date of Birth:"/>
-	          	<p:calendar id="dobedit" required="true" requiredMessage="birth date is required"
-	          		value="#{familyBean.dobDate}" pattern="MM/dd/yyyy" />
-	          	<p:message for="dobedit"></p:message>
-      		</h:panelGrid>
-      		<br/>
-      		<h:panelGrid columns="3" styleClass="dialog" columnClasses="col1,col2,col3" >
-            	<h:outputText value="Gender: "/>
-            	<p:spacer width="10" height="10"></p:spacer>
-            	<p:selectOneRadio layout="grid" columns="2" 
-            		requiredMessage="Gender is required" required="true"
-            		value="#{familyBean.student.gender}">
-       				<f:selectItem itemLabel="Male" itemValue="M" />
-       				<f:selectItem itemLabel="Female" itemValue="F"/>
-				</p:selectOneRadio>
-            </h:panelGrid>
-      	  </h:panelGrid>
-          <br/>
-          <p:commandButton id="editStuentSaveButton" value="#{messages.label_save}" 
-            action="#{familyBean.persistStudent}" oncomplete="PF('editStudentDialogWidget').hide()"
-            update=":dataForm:data :dataForm:studentsData editStudentPanelGrid :growlForm:growl" />
-          <p:commandButton id="editStudentCloseButton" value="#{messages.label_close}" onclick="PF('editStudentDialogWidget').hide()" type="button" />
-          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
-        </h:form>
-      </p:outputPanel>
-    </p:dialog>
+    
     
     
 </ui:composition>

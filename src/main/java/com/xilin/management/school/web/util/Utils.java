@@ -40,12 +40,16 @@ import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
 public class Utils {
 	private static final Logger logger = Logger.getLogger(Utils.class);
 	
 	public static final String DEFAULT_FAMILY_SORT_FIELD = "id";
+	
+	public static final String INVALID_PWD = "invalidpwd";
+	
 	//public static final int ACTIVE = 1;
     //public static final int INACTIVE = 0;
 	public static final boolean ACTIVE = true;
@@ -55,8 +59,9 @@ public class Utils {
     public static final int STATUS_NO_PARENT_INFO = 1;
     public static final int STATUS_NO_PHONE_INFO = 2;
 	
-    public static final String ROLE_XILINADMIN = "ROLE_XILINADMIN";
     public static final String ROLE_XILINFAMILY = "ROLE_XILINFAMILY";
+    public static final String ROLE_XILINADMIN = "ROLE_XILINADMIN";
+    public static final String ROLE_XILINBOARD = "ROLE_XILINBOARD";
     public static final String ROLE_XILINTEACHER = "ROLE_XILINTEACHER";
     public static final String ROLE_XILINSELLER = "ROLE_XILINSELLER";
     
@@ -117,6 +122,26 @@ public class Utils {
             hexString.append(hex);
         }
         return hexString.toString();
+    }
+	
+	public static String retrieveRoleBasedOnType(Character type) {
+        
+        if(type.equals(PERSONNEL_ADMIN)) {
+            return ROLE_XILINADMIN;
+        }
+        
+        if(type.equals(PERSONNEL_TEACHER)) {
+            return ROLE_XILINTEACHER;
+        }
+        
+        if(type.equals(PERSONNEL_BOARD)) {
+            return ROLE_XILINBOARD;
+        }
+        
+        if(type.equals(PERSONNEL_SELLER)) {
+            return ROLE_XILINSELLER;
+        }
+        return "ROLE_UNKNOWN";
     }
 	
 	public static String retrieveLoginUsername() {
@@ -282,5 +307,33 @@ public class Utils {
         return false;
 	}
 
-	
+	public static boolean checkUserExternalIdExistJson(int id, String uri, String apiusername, String apipwd) {
+		RestTemplate restTemplate = Utils.createRestTemplate(apiusername, apipwd);
+		
+		/*String input =new JSONObject()
+        	.put("id", id).toString();
+	    
+	    HttpHeaders headers = new HttpHeaders();
+	    headers.setContentType(MediaType.APPLICATION_JSON);
+	    HttpEntity<String> entity = new HttpEntity<String>(input, headers);*/
+
+	    ResponseEntity<String> response = null;
+        try {
+        	response = restTemplate.exchange(uri + 
+	    	"/allusers/extId/"+ id, HttpMethod.GET, null, String.class);
+        } catch (HttpClientErrorException httpClientOrServerExc) {
+        	if(HttpStatus.NOT_FOUND.equals(httpClientOrServerExc.getStatusCode())) {
+              return false;
+            }
+        } catch (Exception e) {
+        	logger.error(e.getMessage());
+        	e.printStackTrace();
+        }
+        
+        if(response.getStatusCode() == HttpStatus.OK){
+        	return true;
+        }
+        
+        return false;
+	}
 }
