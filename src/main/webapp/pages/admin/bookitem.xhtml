@@ -25,6 +25,12 @@
 					<h:outputText value="Search Bookitems:" />
 					<h:inputText id="globalFilter"
 						onkeyup="PF('bookitemsTable').filter()" />
+						
+					<p:spacer width="10" height="10"></p:spacer>
+				    <h:commandButton action="#{bookitemBean.displayCreateDialog}"
+					  update=":dataForm:data :growlForm:growl" 
+	    			  value="Add Book" >
+	    		    </h:commandButton>
 				</p:outputPanel>
 			</f:facet>
 

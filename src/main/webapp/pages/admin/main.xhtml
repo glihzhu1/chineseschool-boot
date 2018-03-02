@@ -27,11 +27,12 @@
       <ui:include src="../ajaxStatus.xhtml"/>
       <p:panel id="data" toggleable="true" toggleSpeed="250"
         rendered="#{request.isUserInRole('ROLE_XILINADMIN')}">
-        <h:panelGrid columns="2" styleClass="center-block">
+        <h:panelGrid columns="3" styleClass="center-block">
 		  <h:panelGroup layout="block">
 			<h:panelGrid columns="1">
 			  <p:inputText id="searchTerm" size="12"
-					placeholder="search family" value="#{familyBean.strSearchTerm}" />
+			    onkeypress="if (event.keyCode == 13) { familyBean.searchFamilies(); return false; }"
+				placeholder="search family" value="#{familyBean.strSearchTerm}" />
 			</h:panelGrid>
 		  </h:panelGroup>
 		  <h:panelGroup layout="block">
@@ -39,6 +40,16 @@
 			  <h:commandButton  action="#{familyBean.searchFamilies}"
 				update=":dataForm:data :growlForm:growl" 
     			value="search" >
+    		  </h:commandButton>
+    		</h:panelGrid>
+		  </h:panelGroup>
+		  
+		  <h:panelGroup layout="block">
+			<h:panelGrid columns="2">
+			  <p:spacer width="10" height="10"></p:spacer>
+			  <h:commandButton action="#{familyBean.displayCreateDialog}"
+				update=":dataForm:data :growlForm:growl" 
+    			value="Add Family" >
     		  </h:commandButton>
     		</h:panelGrid>
 		  </h:panelGroup>

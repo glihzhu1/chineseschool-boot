@@ -482,6 +482,7 @@
     
     
     <p:dialog id="createDialog" header="#{messages.label_create} Family" modal="true" widgetVar="createDialogWidget" dynamic="true" visible="#{familyBean.createDialogVisible}" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      <p:ajax event="close" update=":dataForm:data" listener="#{familyBean.handleDialogClose}" />
       <p:outputPanel id="createPanel">
         <h:form id="createForm" enctype="multipart/form-data">
           <h:panelGrid id="createPanelGrid" columns="1" styleClass="dialog" columnClasses="col1,col1,col1,col1,col1" >

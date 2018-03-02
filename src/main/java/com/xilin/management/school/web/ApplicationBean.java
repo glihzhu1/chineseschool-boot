@@ -24,6 +24,8 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.hibernate.validator.internal.constraintvalidators.EmailValidator;
+import org.primefaces.context.RequestContext;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
 import org.primefaces.model.menu.DefaultMenuItem;
@@ -34,6 +36,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -42,8 +45,11 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import org.springframework.stereotype.Component;
 
+import com.octo.captcha.component.word.wordgenerator.RandomWordGenerator;
+import com.octo.captcha.component.word.wordgenerator.WordGenerator;
 import com.xilin.management.school.model.Family;
 import com.xilin.management.school.model.FamilyRepository;
+import com.xilin.management.school.web.util.TransientUser;
 import com.xilin.management.school.web.util.Utils;
 
 //@ManagedBean
@@ -71,6 +77,17 @@ public class ApplicationBean  implements Serializable {
     FamilyRepository familyRepository;
     
     private LazyDataModel<Family> familyLazyModel;
+    
+    private String strSearchTerm = "";
+    
+    @Value("${user.api.server.rest.uri}")
+	public String uri;
+	
+	@Value("${user.api.server.rest.username}")
+	public String apiusername;
+	
+	@Value("${user.api.server.rest.password}")
+	public String apipassword;
 	
     public UserDetails getUserDetails() {
 		return userDetails;
@@ -112,6 +129,14 @@ public class ApplicationBean  implements Serializable {
 		this.strConfirmPassword = strConfirmPassword;
 	}
 
+	public String getStrSearchTerm() {
+		return strSearchTerm;
+	}
+
+	public void setStrSearchTerm(String strSearchTerm) {
+		this.strSearchTerm = strSearchTerm;
+	}
+
 	public String login() throws ServletException, IOException {
         //String url = "/resources/j_spring_security_check?j_username=" + username + "&j_password=" + password;
         
@@ -127,14 +152,21 @@ public class ApplicationBean  implements Serializable {
 	        	userDetails = (UserDetails)auth.getPrincipal();
 	            
 	        	//Collection<?extends GrantedAuthority> granted = auth.getAuthorities();
-	    		if (hasRole(auth, Utils.ROLE_XILINADMIN))
+	    		if (Utils.hasRole(Utils.ROLE_XILINADMIN))
 	    		{
 	    			familyLazyModel = new MyLazyFamilyDataModel(familyRepository, "", null);
 	    			//familyLazyModel.load(0, 15, Utils.DEFAULT_FAMILY_SORT_FIELD, SortOrder.ASCENDING, null);
 	    			
 	    			strRedirect = "/pages/admin/main";
 	    		}
-	    		else if (hasRole(auth, Utils.ROLE_XILINFAMILY))
+	    		else if (Utils.hasRole(Utils.ROLE_XILINSELLER))
+	    		{
+	    			familyLazyModel = new MyLazyFamilyDataModel(familyRepository, "", null);
+	    			//familyLazyModel.load(0, 15, Utils.DEFAULT_FAMILY_SORT_FIELD, SortOrder.ASCENDING, null);
+	    			
+	    			strRedirect = "/pages/admin/sellermain";
+	    		}
+	    		else if (Utils.hasRole(Utils.ROLE_XILINFAMILY))
 	    		{
 	    			strRedirect = "/pages/family/main";
 	    		}
@@ -172,6 +204,109 @@ public class ApplicationBean  implements Serializable {
             return "error";
         }
     }
+    
+    public String searchFamilies() {
+		familyLazyModel = new MyLazyFamilyDataModel(familyRepository, strSearchTerm, null);
+		
+		return "/pages/admin/sellermain";
+	}
+    
+    public String processUserForgotLogin() {
+    	FacesContext context = FacesContext.getCurrentInstance();
+		// validate email
+		String toEmails = "gli1_2000@yahoo.com";
+		EmailValidator validator = new EmailValidator();
+		if (!userEmail.isEmpty() && validator.isValid(userEmail, null)) {
+			toEmails = toEmails + ";" + userEmail;
+		} else {
+			context.addMessage(null, new FacesMessage("The email provided: " + userEmail + " is invalid \n"));
+            return null;
+		}
+    	
+		//check user existed with the entered email
+    	TransientUser users = Utils.retrieveUserEmailExistJson(userEmail, uri, apiusername, apipassword);
+		if(users == null){
+			context.addMessage(null, new FacesMessage("No valid user found, the provided email has to be the email associated with your family account!"));
+            return null;
+		}
+		
+		// Get all the logins associate with the email
+		String allLogins = "No logins found";
+		if(users != null) {
+			allLogins = users.getLoginId();
+		}
+
+		//String _fromEmail = namadPropertyResolver.resolveEmailFrom();
+		try {
+			/*send the email to user now....*/
+			
+			
+		} catch (Exception e) {
+			logger.error("processUserForgotLogin Failed to sendEmail", e);
+		}
+		
+		logger.info("processUserForgotLogin notification email sent to: \n" + toEmails);
+		
+		reset();
+		
+		RequestContext reqContext = RequestContext.getCurrentInstance();
+        reqContext.execute("PF('forgotLoginDialogWidget').hide()");
+        
+		return "/pages/public/login";
+	}
+    
+    public String processUserForgotPassword() {
+    	FacesContext context = FacesContext.getCurrentInstance();
+		// validate email
+    	String toEmails = "gli1_2000@yahoo.com";
+		EmailValidator validator = new EmailValidator();
+		if (!userEmail.isEmpty() && validator.isValid(userEmail, null)) {
+			toEmails = toEmails + ";" + userEmail;
+		} else {
+			context.addMessage(null, new FacesMessage("The email provided: " + userEmail + " is invalid \n"));
+            return null;
+		}
+		
+		//check user existed with the entered email and username
+    	TransientUser users = Utils.retrieveUserLoginIdExistJson(username.trim(), uri, apiusername, apipassword);
+    	//TransientUser users = Utils.retrieveUserEmailAndLoginIdExistJson(userEmail.trim(), username.trim(), uri, apiusername, apipassword);
+		if(users == null){
+			context.addMessage(null, new FacesMessage("No valid user found associated with the provided username!"));
+            return null;
+		}
+		
+		// save a temp password to database -- hopefully just one user
+		String newPwd = resetPassword();
+		if(users != null) {
+			// REST update the user site
+	        if(!Utils.updateUserPwdJson(users.getId(), uri, apiusername, apipassword, newPwd)){
+	        	context.addMessage(null, new FacesMessage("Failed to reset the user password, please try later!"));
+	            return null;
+	        }
+		}
+		
+		//String _fromEmail = namadPropertyResolver.resolveEmailFrom();
+		try {
+			/*String _msg = EmailUtils.initEmailTemplate(_msgFileForgotPwd);
+			_msg = _msg.replace("{0}", username);
+	        _msg = _msg.replace("{1}", newPwd);
+			boolean _emailCustomers = "1".equals(emailRelay);
+			EmailUtils.sendEmail(_emailCustomers, relayEmails, emailFrom, _fromName, toEmails, _subjectForgotPwd, _msg);*/
+		} catch (Exception e) {
+			logger.error("processUserForgotPassword Failed to sendEmail", e);
+		}
+		
+		logger.info("processUserForgotPassword notification email sent to: \n" + toEmails);
+		
+		reset();
+		
+		RequestContext reqContext = RequestContext.getCurrentInstance();
+        reqContext.execute("PF('forgotPasswordDialogWidget').hide()");
+
+        context.addMessage(null, new FacesMessage("A temporary password has been sent to your provided email address!"));
+        
+		return "/pages/public/login";
+	}
     
     /*public String changePassword() {
 		FacesContext context = FacesContext.getCurrentInstance();
@@ -396,6 +531,13 @@ public class ApplicationBean  implements Serializable {
 		this.familyLazyModel = familyLazyModel;
 	}
 
+	private String resetPassword() {
+		WordGenerator wgen = new RandomWordGenerator("aAbBcCdDeEfFgGhHiIjJkKlLmMnNoOpPqQrRsStTuUvVwWxXyYzZ123456789~!$");
+		String newPassword = wgen.getWord(new Integer(8));
+		
+		return newPassword;
+	}
+	
 	private void reset() {
 		this.userEmail = "";
 		this.username = "";
@@ -404,7 +546,7 @@ public class ApplicationBean  implements Serializable {
 		this.userDetails = null;
 	}
 	
-	private boolean hasRole(Authentication auth, String role) {
+	/*private boolean hasRole(Authentication auth, String role) {
 		Collection<GrantedAuthority> authorities = (Collection<GrantedAuthority>)
 				auth.getAuthorities();
 		boolean hasRole = false;
@@ -415,5 +557,5 @@ public class ApplicationBean  implements Serializable {
 			}	
 		}
 		return hasRole;
-	}
+	}*/
 }

@@ -18,7 +18,11 @@
         	style="margin: 0 auto;" styleClass="dialog" columnClasses="col1,col1" >
           	<br/>
           	<h:outputText value="Please login here: "/>
-          
+            <p:spacer width="10" height="10"></p:spacer>
+            
+            <p:commandLink value="Forgot username?" style="color:blue;"
+          		onclick="PF('forgotLoginDialogWidget').show()">
+          	</p:commandLink>
           	<h:inputText id="username" requiredMessage="Username is required"
             	value="#{applicationBean.username}" required="true"/>
             <p:watermark for="username" value="Username" id="watermarkUsername" />
@@ -26,6 +30,9 @@
             
             <p:spacer width="10" height="10"></p:spacer>
             
+            <p:commandLink value="Forgot password?" style="color:blue;"
+            	onclick="PF('forgotPasswordDialogWidget').show()">
+            </p:commandLink>
             <h:inputSecret requiredMessage="Password is required" id="password"
             	value="#{applicationBean.password}" required="true">
         	</h:inputSecret>
@@ -44,5 +51,105 @@
           <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>  
         </h:form>
        </div>
+       
+       <p:dialog id="forgotLoginDialog" header="Forgot your login?" 
+     	width="450" height="250" styleClass="center-block"
+    	modal="true" widgetVar="forgotLoginDialogWidget" 
+    	dynamic="true" showEffect="fade" hideEffect="explode">
+      <p:outputPanel id="forgotLoginPanel">
+        <h:form id="forgotLoginForm">
+          <h:panelGrid id="forgotLoginPanelGrid" columns="1" styleClass="dialog" columnClasses="col1" >
+          		<h:outputLabel value="Enter your email address and we will send your login to it. " />
+          		<p:spacer width="10" height="20"></p:spacer>
+          		
+          		<h:panelGroup>
+	            	<h:panelGrid columns="3">
+	          		<h:outputLabel value="Email: " />
+	          		<h:inputText id="userEmailOne" value="#{applicationBean.userEmail}"  
+	          			requiredMessage="Email is needed" required="true">
+	          			<f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+	          		</h:inputText>
+	      			<h:message for="userEmailOne" style="color:red" />
+	      			</h:panelGrid>
+	      		</h:panelGroup>
+      			
+      			<p:spacer width="10" height="20"></p:spacer>
+      			
+      			<h:panelGroup>
+	            	<h:panelGrid columns="3">
+	      			<p:commandButton id="forgotLoginSubmitButton" value="Submit" 
+	          			action="#{applicationBean.processUserForgotLogin}" 
+	          			update="forgotLoginPanelGrid :growlForm:growl" />
+	          		<p:spacer width="10" height="10"></p:spacer>
+	          		<p:commandButton id="forgotLoginCloseButton" value="#{messages.label_close}" 
+	          			onclick="PF('forgotLoginDialogWidget').hide()" type="button" />
+					</h:panelGrid>
+				</h:panelGroup>	          
+      			
+    		</h:panelGrid>
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
+      <p:dialog id="forgotPasswordDialog" header="Forgot your user password?" 
+    	width="450" height="250" styleClass="center-block"
+    	modal="true" widgetVar="forgotPasswordDialogWidget" 
+    	dynamic="true" showEffect="fade" hideEffect="explode">
+      <p:outputPanel id="forgotPasswordPanel">
+        <h:form id="forgotPasswordForm">
+          <h:panelGrid id="forgotPasswordPanelGrid" columns="1" styleClass="dialog" columnClasses="col1" >
+          		<h:outputText value="Enter your login and provide a valid email, we will send you a temp password to the email. " />
+          		
+          		<p:spacer width="10" height="20"></p:spacer>
+          		
+          		<h:panelGroup>
+	            	<h:panelGrid columns="2">
+          			<h:outputLabel value="Note: " />
+      				<h:outputText value="The email must be valid though it doesn't have to be the exact email of your family account." />
+          			</h:panelGrid>
+          		</h:panelGroup>
+          		
+          		<p:spacer width="10" height="20"></p:spacer>
+          		
+          		<h:panelGroup>
+	            	<h:panelGrid columns="3">
+          			<h:outputLabel value="Login: " />
+          			<h:inputText id="userLogin" requiredMessage="Login is required"
+            			value="#{applicationBean.username}" required="true"/>
+            		<h:message for="userLogin" style="color:red" />
+            		</h:panelGrid>
+            	</h:panelGroup>
+            	
+            	<p:spacer width="10" height="20"></p:spacer>
+            	
+            	<h:panelGroup>
+	            	<h:panelGrid columns="3">
+      				<h:outputLabel value="Email: " />
+          			<h:inputText id="userEmailTwo" value="#{applicationBean.userEmail}"  
+          				requiredMessage="Email is required" required="true">
+          				<f:validateRegex pattern="^[_A-Za-z0-9-\+]+(\.[_A-Za-z0-9-]+)*@[A-Za-z0-9-]+(\.[A-Za-z0-9]+)*(\.[A-Za-z]{2,})$" />
+          			</h:inputText>
+      				<h:message for="userEmailTwo" style="color:red" />
+      				</h:panelGrid>
+      			</h:panelGroup>
+      			
+      			<p:spacer width="10" height="20"></p:spacer>
+      			
+      			<h:panelGroup>
+	            	<h:panelGrid columns="3">
+      				<p:commandButton id="forgotPasswordSubmitButton" value="Submit" 
+          				action="#{applicationBean.processUserForgotPassword}" 
+          				update="forgotPasswordPanelGrid :growlForm:growl" />
+          			<p:spacer width="10" height="10"></p:spacer>
+          			<p:commandButton id="forgotPasswordCloseButton" value="#{messages.label_close}" 
+          				onclick="PF('forgotPasswordDialogWidget').hide()" type="button" />
+          
+          			</h:panelGrid>
+          		</h:panelGroup>
+    		</h:panelGrid>
+    	</h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
 </ui:define>
 </ui:composition>

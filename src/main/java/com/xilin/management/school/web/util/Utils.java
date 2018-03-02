@@ -38,7 +38,12 @@ import org.springframework.http.client.ClientHttpRequestFactory;
 import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.http.client.support.BasicAuthorizationInterceptor;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
@@ -154,6 +159,25 @@ public class Utils {
 	    }
 	}
     
+	
+	public static boolean hasRole(String role) {
+        // get security context from thread local
+        SecurityContext context = SecurityContextHolder.getContext();
+        if (context == null)
+            return false;
+
+        Authentication authentication = context.getAuthentication();
+        if (authentication == null)
+            return false;
+
+        for (GrantedAuthority auth : authentication.getAuthorities()) {
+            if (role.equals(auth.getAuthority()))
+                return true;
+        }
+
+        return false;
+    }
+	
 	public static RestTemplate createRestTemplate(String apiusername, String apipwd) {
 		CredentialsProvider provider = new BasicCredentialsProvider();
 	    UsernamePasswordCredentials credentials = 
@@ -327,7 +351,6 @@ public class Utils {
             }
         } catch (Exception e) {
         	logger.error(e.getMessage());
-        	e.printStackTrace();
         }
         
         if(response.getStatusCode() == HttpStatus.OK){
@@ -336,4 +359,107 @@ public class Utils {
         
         return false;
 	}
+	
+	public static TransientUser retrieveUserLoginIdExistJson(String loginId, String uri, String apiusername, String apipwd) {
+		RestTemplate restTemplate = Utils.createRestTemplate(apiusername, apipwd);
+		
+		final String userLoadUri = uri + "/allusers/loginId/" + loginId + "/";
+		
+	    ResponseEntity<String> response = null;
+        try {
+        	response = restTemplate.exchange(userLoadUri, 
+          		  HttpMethod.GET, null, String.class);
+        } catch (HttpClientErrorException httpClientOrServerExc) {
+        	if(HttpStatus.NOT_FOUND.equals(httpClientOrServerExc.getStatusCode())) {
+              return null;
+            }
+        } catch (Exception e) {
+        	logger.error(e.getMessage());
+        }
+        
+        if(response.getStatusCode() != HttpStatus.OK) {
+        	return null;
+        }
+        else {
+        	try {
+        		TransientUser auser = TransientUser.fromJsonToTransientUser(response.getBody());
+        		return auser;
+        	}
+        	catch (Exception e) {
+        		logger.error(e.getMessage());
+        	}
+        }
+    	
+        return null;
+    }
+	
+	public static TransientUser retrieveUserEmailExistJson(String email, String uri, String apiusername, String apipwd) {
+		RestTemplate restTemplate = Utils.createRestTemplate(apiusername, apipwd);
+		
+		//with email has a . at its end, a traing / is needed...
+		final String userLoadUri = uri + "/allusers/email/" + email + "/";
+		
+	    ResponseEntity<String> response = null;
+        try {
+        	response = restTemplate.exchange(userLoadUri, 
+          		  HttpMethod.GET, null, String.class);
+        } catch (HttpClientErrorException httpClientOrServerExc) {
+        	if(HttpStatus.NOT_FOUND.equals(httpClientOrServerExc.getStatusCode())) {
+              return null;
+            }
+        } catch (Exception e) {
+        	logger.error(e.getMessage());
+        }
+        
+        if(response.getStatusCode() != HttpStatus.OK) {
+        	return null;
+        }
+        else {
+        	try {
+        		TransientUser auser = TransientUser.fromJsonToTransientUser(response.getBody());
+        		return auser;
+        	}
+        	catch (Exception e) {
+        		logger.error(e.getMessage());
+        	}
+        }
+    	
+        return null;
+        
+	}
+	
+	public static TransientUser retrieveUserEmailAndLoginIdExistJson(String email, String loginId, String uri, String apiusername, String apipwd) {
+		RestTemplate restTemplate = Utils.createRestTemplate(apiusername, apipwd);
+		
+		final String userLoadUri = uri + "/allusers/emailloginid/" + email + "/" + loginId + "/";
+		
+	    ResponseEntity<String> response = null;
+        try {
+        	response = restTemplate.exchange(userLoadUri, 
+          		  HttpMethod.GET, null, String.class);
+        } catch (HttpClientErrorException httpClientOrServerExc) {
+        	if(HttpStatus.NOT_FOUND.equals(httpClientOrServerExc.getStatusCode())) {
+              return null;
+            }
+        } catch (Exception e) {
+        	logger.error(e.getMessage());
+        }
+        
+        if(response.getStatusCode() != HttpStatus.OK) {
+        	return null;
+        }
+        else {
+        	try {
+        		TransientUser auser = TransientUser.fromJsonToTransientUser(response.getBody());
+        		return auser;
+        	}
+        	catch (Exception e) {
+        		logger.error(e.getMessage());
+        	}
+        }
+    	
+        return null;
+        
+	}
+	
 }

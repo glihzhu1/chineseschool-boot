@@ -220,9 +220,10 @@ public class PersonnelBean implements Serializable {
 			}
 			
 			//Check whether the external user id exist thru REST
+			TransientUser auser = null;
 			if(!Utils.checkUserExternalIdExistJson(personnel.getExternaluserid(), uri, apiusername, apipassword)){
 				//create the user
-				TransientUser auser = Utils.createUserJson(uri, apiusername, apipassword, personnel.getLoginId(), Utils.INVALID_PWD, 
+				auser = Utils.createUserJson(uri, apiusername, apipassword, personnel.getLoginId(), Utils.INVALID_PWD, 
 						personnel.getEmail(), Utils.retrieveRoleBasedOnType(personnel.getType()));
 				if(auser != null) {
 					personnel.setExternaluserid(auser.getId());
@@ -237,7 +238,13 @@ public class PersonnelBean implements Serializable {
     			personnelRepository.save(personnel);
 	            
 			}
-            message = "message_successfully_updated";
+			
+			if(auser != null) {
+				message = "message_successfully_updated_need_reset_password";
+			}
+			else {
+				message = "message_successfully_updated";
+			}
         } else {
         	if(!personnelLogin.isEmpty() && !personnelPassword.isEmpty()
         			&& !personnel.getEmail().isEmpty()) {

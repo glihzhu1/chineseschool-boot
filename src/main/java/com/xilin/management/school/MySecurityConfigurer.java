@@ -46,8 +46,8 @@ public class MySecurityConfigurer extends WebSecurityConfigurerAdapter {
 	public void configure(HttpSecurity http) throws Exception {
 		http.csrf().disable().authorizeRequests()
 			.antMatchers("/", "/resources/static/**", "/webjars/**", "/pages/public/**", "/public/**", "/pages/templates/**", "/index.jsf").permitAll()
-			.antMatchers("/pages/admin/**").access("hasRole('ROLE_XILINADMIN')")
-			.antMatchers("/pages/family/**").access("hasRole('ROLE_XILINADMIN') or hasRole('ROLE_XILINFAMILY')")
+			.antMatchers("/pages/admin/**").access("hasRole('ROLE_XILINADMIN') or hasRole('ROLE_XILINSELLER')")
+			.antMatchers("/pages/family/**").access("hasRole('ROLE_XILINADMIN') or hasRole('ROLE_XILINSELLER') or hasRole('ROLE_XILINFAMILY')")
 	        //.antMatchers("/pages/candiate/**").access("hasRole('ROLE_XILINADMIN') or hasRole('ROLE_XILINFAMILY') or hasRole('ROLE_NAMADCandidate')")
 	        .anyRequest().authenticated()
 			.and()

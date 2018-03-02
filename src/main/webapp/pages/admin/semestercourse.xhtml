@@ -28,6 +28,11 @@
 					<h:outputText value="Search Semester courses:" />
 					<h:inputText id="globalFilter"
 						onkeyup="PF('semestercoursesTable').filter()" />
+					<p:spacer width="10" height="10"></p:spacer>
+				    <h:commandButton action="#{semestercourseBean.displayCreateDialog}"
+					  update=":dataForm:data :growlForm:growl" 
+	    			  value="Add Class" >
+	    		    </h:commandButton>
 				</p:outputPanel>		
 			</f:facet>
 

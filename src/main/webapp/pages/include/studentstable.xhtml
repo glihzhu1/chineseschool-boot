@@ -42,7 +42,7 @@
 			</f:facet>
 			<h:outputText value="#{student.gender}" />
 		</p:column>
-		<p:column styleClass="action-column">
+		<p:column styleClass="action-column" rendered="#{request.isUserInRole('ROLE_XILINADMIN') or request.isUserInRole('ROLE_XILINFAMILY')}">
 	          <f:facet name="header">
 	            <h:outputText value="Actions" style="color: blue"/>
 	          </f:facet>

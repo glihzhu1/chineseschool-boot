@@ -1,50 +1,51 @@
-<ui:composition xmlns="http://www.w3.org/1999/xhtml"
-	xmlns:f="http://java.sun.com/jsf/core"
-	xmlns:h="http://java.sun.com/jsf/html"
-	xmlns:ui="http://java.sun.com/jsf/facelets"
-	xmlns:p="http://primefaces.org/ui"
-	xmlns:pe="http://primefaces.org/ui/extensions">
-	
-	<!-- used by family/main and admin/family -->
-	<h:form prependId="false" id="growlForm">
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+<ui:composition template="/templates/layout.xhtml">
+  <ui:define name="content">
+    <!-- 
+    <p:panel id="mainPanel" toggleable="true" toggleSpeed="250">
+      <f:facet name="header">
+        <h:outputFormat value="#{messages.label_welcome_titlepane}">
+          <f:param value="#{applicationBean.appName}" />
+        </h:outputFormat>
+      </f:facet>
+      <p />
+      <h:outputText id="welcomeText" value="#{messages.label_welcome_text}" />
+      <p />
+    </p:panel>
+     --> 
+    
+    <h:form prependId="false" id="growlForm">
       <p:growl id="growl" showDetail="false" />
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     </h:form>
     <h:form prependId="false" id="dataForm">
       <ui:include src="../ajaxStatus.xhtml"/>
       <p:panel id="data" toggleable="true" toggleSpeed="250"
-        rendered="#{request.isUserInRole('ROLE_XILINADMIN')}">
-        <h:panelGrid columns="3" styleClass="center-block">
+        rendered="#{request.isUserInRole('ROLE_XILINSELLER')}">
+        <h:panelGrid columns="2" styleClass="center-block">
 		  <h:panelGroup layout="block">
 			<h:panelGrid columns="1">
 			  <p:inputText id="searchTerm" size="12"
-			    onkeypress="if (event.keyCode == 13) { familyBean.searchFamilies(); return false; }"
-				placeholder="search family" value="#{familyBean.strSearchTerm}" />
+			    onkeypress="if (event.keyCode == 13) { applicationBean.searchFamilies(); return false; }"
+				placeholder="search family" value="#{applicationBean.strSearchTerm}" />
 			</h:panelGrid>
 		  </h:panelGroup>
 		  <h:panelGroup layout="block">
 			<h:panelGrid columns="1">
-			  <h:commandButton  action="#{familyBean.searchFamilies}"
+			  <h:commandButton  action="#{applicationBean.searchFamilies}"
 				update=":dataForm:data :growlForm:growl" 
     			value="search" >
     		  </h:commandButton>
     		</h:panelGrid>
 		  </h:panelGroup>
-		  
-		  <h:panelGroup layout="block">
-			<h:panelGrid columns="2">
-			  <p:spacer width="10" height="10"></p:spacer>
-			  <h:commandButton  action="#{familyBean.displayCreateDialog}"
-				update=":dataForm:data :growlForm:growl" 
-    			value="Add Family" >
-    		  </h:commandButton>
-    		</h:panelGrid>
-		  </h:panelGroup>
-		  
-		  
 		</h:panelGrid>
 		
-        <p:dataTable id="list" value="#{familyBean.familyLazyModel}" var="family" 
+        <p:dataTable id="list" value="#{applicationBean.familyLazyModel}" var="family" 
         	emptyMessage="no items found" rowKey="#{family.id}" 
             selection="#{familyBean.family}" selectionMode="single"
             filteredValue="#{familyBean.filteredFamily}" rowExpandMode="single"
@@ -107,29 +108,9 @@
 	            rendered="#{family.active}">
 	              <f:param name="familyrowid" value="#{family.id}"/>
 	          </p:menuitem>
-	          <p:menuitem value="Add Student" oncomplete="PF('addStudentWidget').show()"
-                update=":addStudentForm:addStudentPanelGrid"
-                actionListener="#{familyBean.onChangeFamilyAction}" icon="fa fa-fw fa-plus">
-                <f:param name="familyrowid" value="#{family.id}"/>
-              </p:menuitem>
               <p:menuitem value="View Family" oncomplete="PF('viewDialogWidget').show()"
                 update=":viewForm:viewPanelGrid"
                 actionListener="#{familyBean.onChangeFamilyAction}" icon="fa fa-fw fa-eye">
-                <f:param name="familyrowid" value="#{family.id}"/>
-              </p:menuitem>
-              <p:menuitem value="Edit Family" oncomplete="PF('editDialogWidget').show()"
-              	update=":editForm:editPanelGrid"
-                actionListener="#{familyBean.onChangeFamilyAction}" icon="fa fa-fw fa-edit">
-                <f:param name="familyrowid" value="#{family.id}"/>
-              </p:menuitem>
-              <p:menuitem value="Change Password" oncomplete="PF('changePasswordDialogWidget').show()"
-              	update=":changePasswordForm:changePasswordPanelGrid"
-                actionListener="#{familyBean.onChangeFamilyAction}" icon="fa fa-fw fa-key">
-                <f:param name="familyrowid" value="#{family.id}"/>
-              </p:menuitem>
-              <p:menuitem value="Deactivate" oncomplete="PF('deactivateDialogWidget').show()"
-                rendered="#{family.active}"
-              	actionListener="#{familyBean.onChangeFamilyAction}" icon="fa fa-fw fa-close">
                 <f:param name="familyrowid" value="#{family.id}"/>
               </p:menuitem>
             </p:menuButton>
@@ -154,13 +135,11 @@
 		  </p:panel>  
 	     -->
 	  </p:panel>
-	  <p:panel id="studentsData" rendered="#{request.isUserInRole('ROLE_XILINFAMILY')}">  
-        <ui:include src="../include/studentstable.xhtml" />
-	  </p:panel>
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     </h:form>
-     
     
+    <ui:include src="../include/familyactiondialogs.xhtml" />
     
-    
+  </ui:define>
 </ui:composition>
+</html>

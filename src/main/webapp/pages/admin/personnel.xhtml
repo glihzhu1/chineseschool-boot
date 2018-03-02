@@ -25,6 +25,11 @@
 					<h:outputText value="Search Personnels:" />
 					<h:inputText id="globalFilter"
 						onkeyup="PF('personnelsTable').filter()" />
+					<p:spacer width="10" height="10"></p:spacer>
+				    <h:commandButton action="#{personnelBean.displayCreateDialog}"
+					  update=":dataForm:data :growlForm:growl" 
+	    			  value="Add Personnel" >
+	    		    </h:commandButton>
 				</p:outputPanel>
 			</f:facet>
 

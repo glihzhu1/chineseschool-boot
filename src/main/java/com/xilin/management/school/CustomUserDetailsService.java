@@ -45,13 +45,12 @@ public class CustomUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(final String username) {
     	TransientUser tuser = null;
-    	//final User user = userRepository.findByUsername(username);
     	
-    	final String userLoadUri = uri +
+    	tuser = Utils.retrieveUserLoginIdExistJson(username.trim(), uri, apiusername, apipassword);
+    	/*final String userLoadUri = uri +
 				"/allusers/loginId/" + username;
     	
     	RestTemplate restTemplate = Utils.createRestTemplate(apiusername, apipassword);
-        //String msg= restTemplate.getForObject(uri, String.class);
         ResponseEntity<String> response = null;
         try {
         	response = restTemplate.exchange(userLoadUri, 
@@ -65,15 +64,13 @@ public class CustomUserDetailsService implements UserDetailsService {
         }
         else {
         	try {
-        		//System.out.println("msg="+response.getBody());
         		tuser = TransientUser.fromJsonToTransientUser(response.getBody());
         		System.out.println("msg="+tuser.toString());
         	}
         	catch (Exception e) {
-        		//logger.error(e.getMessage());
         		e.printStackTrace();
         	}
-        }
+        }*/
     	
         if (tuser == null) {
             throw new UsernameNotFoundException(username);

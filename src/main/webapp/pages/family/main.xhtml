@@ -21,19 +21,19 @@
 	      <p:dashboard id="board" model="#{familyBean.boardModel}">
 	        <p:panel id="actions" header="Actions" style="width=300px; height:150px;">
 	            <p:commandLink value="My Family Payments" action="#{familyBean.queryFamilyInfoAndProcessPayment}"
-	              oncomplete="PF('processPaymentDialogWidget').show()"
+	              oncomplete="PF('processPaymentDialogWidget').show()" style="color: blue"
 	              update="processPaymentDialog" />
 	            <br/>
 	            <p:commandLink value="Reserve POD(Parent on Duty)" action="#{familyBean.queryFamilyInfoAndReservePod}"
-	              oncomplete="PF('reservePodDialogWidget').show()"
+	              oncomplete="PF('reservePodDialogWidget').show()" style="color: blue"
 	              update="reservePodDialog" />
 	            <br/>
 	            <p:commandLink value="Add New Student" action="#{familyBean.queryFamilyInfoAndAddStudent}"
-	              oncomplete="PF('addStudentWidget').show()" 
+	              oncomplete="PF('addStudentWidget').show()" style="color: blue"
 	              update=":addStudentForm:addStudentPanelGrid" />
 	            <br/>
 	            <p:commandLink value="My Family Book Orders" action="#{familyBean.queryFamilyInfoAndManagebooks}"
-	              oncomplete="PF('orderbookDialogWidget').show()"
+	              oncomplete="PF('orderbookDialogWidget').show()" style="color: blue"
 	              update="orderbookDialog" />
 	            <br/>
 	          
@@ -41,15 +41,15 @@
 	        
 	        <p:panel id="accountSetting" header="Account Setting" style="width=300px; height:150px;">
 	            <p:commandLink value="Edit Family Information" action="#{familyBean.queryFamilyInfo}"
-	              oncomplete="PF('editDialogWidget').show()" 
+	              oncomplete="PF('editDialogWidget').show()" style="color: blue"
 	              update=":editForm:editPanelGrid" />
 	            <br/>
 	            <p:commandLink value="View Family Information" action="#{familyBean.queryFamilyInfo}"
-	              oncomplete="PF('viewDialogWidget').show()" 
+	              oncomplete="PF('viewDialogWidget').show()" style="color: blue"
 	              update=":viewForm:viewPanelGrid" />
 	            <br/>
 	            <p:commandLink value="Change Family Password" action="#{familyBean.queryFamilyInfo}"
-	              oncomplete="PF('changePasswordDialogWidget').show()" 
+	              oncomplete="PF('changePasswordDialogWidget').show()" style="color: blue"
 	              update=":changePasswordForm:changePasswordPanelGrid" />
 	        </p:panel>
 	      </p:dashboard>

@@ -166,6 +166,8 @@ public class FamilyBean implements Serializable {
 		FacesContextUtils.getRequiredWebApplicationContext(FacesContext.getCurrentInstance())
 		.getAutowireCapableBeanFactory().autowireBean(this);
 		
+		createDialogVisible = false;
+		
 		boardModel = new DefaultDashboardModel();
         DashboardColumn column1 = new DefaultDashboardColumn();
         DashboardColumn column2 = new DefaultDashboardColumn();
@@ -291,6 +293,7 @@ public class FamilyBean implements Serializable {
 
 	public String searchFamilies() {
 		familyLazyModel = new MyLazyFamilyDataModel(familyRepository, strSearchTerm, null);
+		
 		return "/pages/admin/family";
 	}
 	
@@ -365,9 +368,10 @@ public class FamilyBean implements Serializable {
 			}
 			
 			//Check whether the external user id exist thru REST
+			TransientUser auser = null;
 			if(!Utils.checkUserExternalIdExistJson(family.getExternaluserid(), uri, apiusername, apipassword)){
 				//create the user
-				TransientUser auser = Utils.createUserJson(uri, apiusername, apipassword, family.getLoginId(), Utils.INVALID_PWD, 
+				auser = Utils.createUserJson(uri, apiusername, apipassword, family.getLoginId(), Utils.INVALID_PWD, 
 						family.getEmail(), Utils.ROLE_XILINFAMILY);
 				if(auser != null) {
 					family.setExternaluserid(auser.getId());
@@ -385,8 +389,12 @@ public class FamilyBean implements Serializable {
 			
 			//Create or update father and mother as students 
             //A little lessss-- No need for now.
-            
-            message = "message_successfully_updated";
+			if(auser != null) {
+				message = "message_successfully_updated_need_reset_password";
+			}
+			else {
+				message = "message_successfully_updated";
+			}
         } else {
             if(!familyLogin.isEmpty() && !familyPassword.isEmpty()
         			&& !family.getEmail().isEmpty()) {
@@ -447,7 +455,8 @@ public class FamilyBean implements Serializable {
         context.execute("PF('createDialogWidget').hide()");
         context.execute("PF('editDialogWidget').hide()");
         
-        FacesMessage facesMessage = MessageFactory.getMessage(message, "Family");
+        
+       	FacesMessage facesMessage = MessageFactory.getMessage(message, "Family");
         FacesContext.getCurrentInstance().addMessage(null, facesMessage);
         reset();
         
