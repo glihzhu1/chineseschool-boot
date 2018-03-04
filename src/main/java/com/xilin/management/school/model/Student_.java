@@ -9,7 +9,7 @@ import javax.persistence.metamodel.StaticMetamodel;
 @Generated(value="Dali", date="2017-08-03T15:39:52.586-0500")
 @StaticMetamodel(Student.class)
 public class Student_ {
-	public static volatile SetAttribute<Student, Registration> registrations;
+	public static volatile SetAttribute<Student, Familytransaction> familytransactions;
 	public static volatile SingularAttribute<Student, Family> familyid;
 	public static volatile SingularAttribute<Student, String> lastname;
 	public static volatile SingularAttribute<Student, String> firstname;

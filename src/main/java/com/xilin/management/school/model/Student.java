@@ -25,9 +25,11 @@ public class Student {
         return new ReflectionToStringBuilder(this, ToStringStyle.SHORT_PREFIX_STYLE).setExcludeFieldNames("registrations", "familyid").toString();
     }
 
+	/*@OneToMany(mappedBy = "studentid")
+    private Set<Registration> registrations;*/
 	@OneToMany(mappedBy = "studentid")
-    private Set<Registration> registrations;
-
+    private Set<Familytransaction> familytransactions;
+	
 	@ManyToOne
     @JoinColumn(name = "familyid", referencedColumnName = "id")
     private Family familyid;
@@ -68,17 +70,25 @@ public class Student {
 	@Column(name = "updatedby", length = 40)
     private String updatedby;
 
-	public Set<Registration> getRegistrations() {
+	/*public Set<Registration> getRegistrations() {
         return registrations;
     }
 
 	public void setRegistrations(Set<Registration> registrations) {
         this.registrations = registrations;
-    }
+    }*/
 
 	public Family getFamilyid() {
         return familyid;
     }
+
+	public Set<Familytransaction> getFamilytransactions() {
+		return familytransactions;
+	}
+
+	public void setFamilytransactions(Set<Familytransaction> familytransactions) {
+		this.familytransactions = familytransactions;
+	}
 
 	public void setFamilyid(Family familyid) {
         this.familyid = familyid;

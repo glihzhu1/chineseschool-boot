@@ -11,15 +11,23 @@ import javax.faces.application.FacesMessage;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
+import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
+import javax.servlet.http.HttpServletRequest;
 
+import org.hibernate.validator.internal.constraintvalidators.EmailValidator;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.CloseEvent;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 import org.springframework.web.jsf.FacesContextUtils;
 
@@ -27,6 +35,7 @@ import com.xilin.management.school.model.Bookitem;
 import com.xilin.management.school.model.BookitemRepository;
 import com.xilin.management.school.model.Courseinformation;
 import com.xilin.management.school.model.CourseinformationRepository;
+import com.xilin.management.school.model.Family;
 import com.xilin.management.school.model.MyCustomSchoolService;
 import com.xilin.management.school.model.Personnel;
 import com.xilin.management.school.model.PersonnelRepository;
@@ -34,13 +43,19 @@ import com.xilin.management.school.model.Semester;
 import com.xilin.management.school.model.SemesterRepository;
 import com.xilin.management.school.model.Semestercourse;
 import com.xilin.management.school.model.SemestercourseRepository;
+import com.xilin.management.school.model.Student;
+import com.xilin.management.school.model.StudentRepository;
 import com.xilin.management.school.web.util.MessageFactory;
 import com.xilin.management.school.web.util.Utils;
 
 @Component("semestercourseBean")
 @Scope("session")
 public class SemestercourseBean implements Serializable {
-
+	private static final Logger logger = LoggerFactory.getLogger(SemestercourseBean.class);
+	
+	@Autowired
+    public JavaMailSender emailSender;
+	
 	@Autowired
     SemestercourseRepository semestercourseRepository;
 
@@ -49,6 +64,9 @@ public class SemestercourseBean implements Serializable {
 	
 	@Autowired
 	private BookitemRepository bookitemRepository;
+	
+	@Autowired
+	private StudentRepository studentRepository;
 	
 	@Autowired
 	private PersonnelRepository personnelRepository;
@@ -83,16 +101,41 @@ public class SemestercourseBean implements Serializable {
 	private Bookitem bookitem;
 	private Semester latestSemester;
 	private String semesterCourseAction;
+	private List<Student> selectedStudents;
+	private Student student;
+	
+	private boolean emailStudentDialogVisible = false;
+	private boolean emailStudentDialogOneVisible = false;
+	//String toCandidateEmail;
+	
+	//@Value("${candidate.email.subject}")
+	String toStudentEmailSubject;
+	
+	//@Value("${email.from.name}")
+	//private String _fromName;
+	
+	//@Value("${email.relay.address}")
+	String relayEmails;
+	
+	String toStudentEmailMsg;
 	
 	@PostConstruct
     public void init() {
 		FacesContextUtils.getRequiredWebApplicationContext(FacesContext.getCurrentInstance())
 		.getAutowireCapableBeanFactory().autowireBean(this);
 		
-		// get latestsemester -- should query when needed.
-		/*		
-		latestSemester = semesterRepository.findFirstByOrderByRegisterstartdateDesc();*/
-	
+		latestSemester = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
+		
+		// Below is for teacher to get his or her classes
+		if(Utils.hasRole(Utils.ROLE_XILINTEACHER)) {
+        	String loginUser = Utils.retrieveLoginUsername();
+     		List<Personnel> loginTeacher = personnelRepository.findByLoginIdIgnoreCase(loginUser);
+     		
+     		if(loginTeacher != null && loginTeacher.size() > 0) {
+     			teacher = loginTeacher.get(0);
+     			allSemestercourses = semestercourseRepository.findBySemesteridAndTeacherid(latestSemester, teacher);
+     		}
+        }
     }
 
 	public String getName() {
@@ -164,9 +207,64 @@ public class SemestercourseBean implements Serializable {
         this.semestercourse = semestercourse;
     }
 
+	public List<Student> getSelectedStudents() {
+		return selectedStudents;
+	}
+
+	public void setSelectedStudents(List<Student> selectedStudents) {
+		this.selectedStudents = selectedStudents;
+	}
+
+	public Student getStudent() {
+		return student;
+	}
+
+	public void setStudent(Student student) {
+		this.student = student;
+	}
+
+	public boolean isEmailStudentDialogVisible() {
+		return emailStudentDialogVisible;
+	}
+
+	public void setEmailStudentDialogVisible(boolean emailStudentDialogVisible) {
+		this.emailStudentDialogVisible = emailStudentDialogVisible;
+	}
+
+	public boolean isEmailStudentDialogOneVisible() {
+		return emailStudentDialogOneVisible;
+	}
+
+	public void setEmailStudentDialogOneVisible(boolean emailStudentDialogOneVisible) {
+		this.emailStudentDialogOneVisible = emailStudentDialogOneVisible;
+	}
+
+	public String getToStudentEmailSubject() {
+		return toStudentEmailSubject;
+	}
+
+	public void setToStudentEmailSubject(String toStudentEmailSubject) {
+		this.toStudentEmailSubject = toStudentEmailSubject;
+	}
+
+	public String getToStudentEmailMsg() {
+		return toStudentEmailMsg;
+	}
+
+	public void setToStudentEmailMsg(String toStudentEmailMsg) {
+		this.toStudentEmailMsg = toStudentEmailMsg;
+	}
+
 	public String onEdit() {
 		prepareClassNeededDropdowns();
 		
+		Map<String,String> params =
+			FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+
+		String semestercourserowid = params.get("semestercourserowid");
+			
+		semestercourse = semestercourseRepository.findOne(Integer.valueOf(semestercourserowid));
+			
 		if(semestercourse.getCourseinfoid() != null) {
 			courseinfo = semestercourse.getCourseinfoid();
 			courseinfoId = courseinfo.getId();
@@ -185,6 +283,14 @@ public class SemestercourseBean implements Serializable {
         return null;
     }
 
+	public String onListStudent() {
+		if(semestercourse != null) {
+			selectedStudents = studentRepository.queryAllStudentsForClass(semestercourse);
+		}
+		
+        return null;
+    }
+	
 	public boolean isCreateDialogVisible() {
         return createDialogVisible;
     }
@@ -203,6 +309,56 @@ public class SemestercourseBean implements Serializable {
         return "/pages/admin/semestercourse";
     }
 
+	public void displayEmailStudentDialogOne(ActionEvent evt) {
+		//emailStudentDialogVisible = false;
+		emailStudentDialogOneVisible = true;
+		createDialogVisible = false;
+		
+		Map<String,String> params =
+			FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+		String studentrowid = params.get("studentrowid");
+		student = studentRepository.findOne(Integer.valueOf(studentrowid));
+    }
+	
+	public String sendSelectedStudentEmail() {
+		//This email can  be from either manufacture or admin
+		//emailCandidateDialogVisible = false;
+		emailStudentDialogOneVisible = false;
+		createDialogVisible = false;
+		
+		String toEmails = student.getFamilyid().getEmail();
+		
+		FacesMessage facesMessage = null;
+		String _fromEmail = "";
+		try {
+			SimpleMailMessage message = new SimpleMailMessage(); 
+	        message.setTo(toEmails); 
+	        message.setSubject(this.toStudentEmailSubject); 
+	        message.setText(this.toStudentEmailMsg);
+	        emailSender.send(message);
+		} catch (Exception e) {
+			facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN, 
+    				"Failed to sendSelectedStudentEmail to: " + toEmails, "");
+			
+			logger.error("Failed to sendSelectedStudentEmail to: " + toEmails, e);
+		}
+		logger.info("Student email sent to: \n" + toEmails);
+		
+		RequestContext context = RequestContext.getCurrentInstance();
+        context.execute("PF('emailStudentDialogOneWidget').hide()");
+        
+        facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
+				"Successfully sendSelectedStudentEmail to: " + toEmails, "");
+        
+        if(facesMessage != null)
+        	FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+        
+        this.toStudentEmailSubject = "";
+        this.toStudentEmailMsg = "";
+
+        return null;
+	}
+	
 	public String displayCreateDialog() {
         semestercourse = new Semestercourse();
         semestercourse.setStatus(Utils.CLASS_STATUS_OPEN);

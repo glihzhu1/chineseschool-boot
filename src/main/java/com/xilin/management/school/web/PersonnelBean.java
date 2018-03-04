@@ -1,5 +1,6 @@
 package com.xilin.management.school.web;
 import com.xilin.management.school.model.Semestercourse;
+import com.xilin.management.school.model.Family;
 import com.xilin.management.school.model.Personnel;
 import com.xilin.management.school.model.PersonnelRepository;
 import com.xilin.management.school.web.util.MessageFactory;
@@ -35,6 +36,10 @@ import org.primefaces.component.selectbooleancheckbox.SelectBooleanCheckbox;
 import org.primefaces.component.spinner.Spinner;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.CloseEvent;
+import org.primefaces.model.DashboardColumn;
+import org.primefaces.model.DashboardModel;
+import org.primefaces.model.DefaultDashboardColumn;
+import org.primefaces.model.DefaultDashboardModel;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
@@ -83,10 +88,23 @@ public class PersonnelBean implements Serializable {
 	private String personnelConfirmPassword;
 	private List<Personnel> filteredPersonnels;
 	
+	private DashboardModel teacherBoardModel;
+	
 	@PostConstruct
     public void init() {
 		FacesContextUtils.getRequiredWebApplicationContext(FacesContext.getCurrentInstance())
 		.getAutowireCapableBeanFactory().autowireBean(this);
+		
+		teacherBoardModel = new DefaultDashboardModel();
+        DashboardColumn column1 = new DefaultDashboardColumn();
+        DashboardColumn column2 = new DefaultDashboardColumn();
+        //DashboardColumn column3 = new DefaultDashboardColumn();
+         
+        column1.addWidget("actions");
+        column2.addWidget("accountSetting");
+ 
+        teacherBoardModel.addColumn(column1);
+        teacherBoardModel.addColumn(column2);
 		
     }
 
@@ -146,6 +164,28 @@ public class PersonnelBean implements Serializable {
         this.createDialogVisible = createDialogVisible;
     }
 
+	public DashboardModel getTeacherBoardModel() {
+		return teacherBoardModel;
+	}
+
+	public void setTeacherBoardModel(DashboardModel teacherBoardModel) {
+		this.teacherBoardModel = teacherBoardModel;
+	}
+
+	public String queryPersonnelInfo() {
+		String loginUser = Utils.retrieveLoginUsername();
+		List<Personnel> loginPersonnels = personnelRepository.findByLoginIdIgnoreCase(loginUser);
+		
+		if(loginPersonnels != null && loginPersonnels.size() > 0) {
+			personnel = loginPersonnels.get(0);
+		}
+		else {
+			personnel = null;
+		}
+		
+        return null;
+    }
+	
 	public String displayList() {
         createDialogVisible = false;
         findAllPersonnels();
@@ -294,7 +334,12 @@ public class PersonnelBean implements Serializable {
         FacesMessage facesMessage = MessageFactory.getMessage(message, "Personnel");
         FacesContext.getCurrentInstance().addMessage(null, facesMessage);
         reset();
-        return findAllPersonnels();
+        
+        if(Utils.hasRole(Utils.ROLE_XILINADMIN)) {
+        	return findAllPersonnels();
+        }
+        else
+        	return null;
     }
 
 	public String deactivatePersonnel() {

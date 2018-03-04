@@ -15,6 +15,8 @@ public interface MyCustomSchoolService {
 	
 	public List<MyClassViewObject> queryAllClasses();
 	
+	//public List<Student> queryAllStudentsForClass(Semestercourse cls);
+	
 	public void saveStudentRegisteredFamilytransactions(List<Familytransaction> registeredFamilytransactions);
 	public void deleteRegisteredCls(Familytransaction familytransaction);
 	

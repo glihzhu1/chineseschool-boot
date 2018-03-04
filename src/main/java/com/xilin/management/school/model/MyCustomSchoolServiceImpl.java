@@ -93,6 +93,12 @@ public class MyCustomSchoolServiceImpl implements MyCustomSchoolService {
 		return allItems;
 	}
 	
+	/*public List<Student> queryAllStudentsForClass(Semestercourse cls){
+		List<Student> allItems = new ArrayList<Student>();
+		
+		return allItems;
+	}*/
+	
 	// Not used...
 	@Query("select NEW com.xilin.management.school.model.MyClassViewObject(sc.id, u.strManuContactName, " +
 			" u.strManuEmail, u.strManuPhone) " +

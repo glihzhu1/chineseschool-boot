@@ -17,5 +17,7 @@ public interface SemestercourseRepository extends JpaSpecificationExecutor<Semes
 	public List<Semestercourse> findBySemesteridAndFetchEagerly();
 	
 	public List<Semestercourse> findBySemesteridOrderBySemestercoursecodeAsc(Semester semesterid);
+	
+	public List<Semestercourse> findBySemesteridAndTeacherid(Semester semesterid, Personnel teacher);
 
 }

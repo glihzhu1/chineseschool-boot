@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:h="http://java.sun.com/jsf/html"
+      xmlns:ui="http://java.sun.com/jsf/facelets"
+      xmlns:p="http://primefaces.org/ui">
+      
+<ui:composition template="/templates/layout.xhtml">
+  <ui:define name="content">
+    <p:panel id="mainPanel" toggleable="true" toggleSpeed="250">
+      <f:facet name="header">
+        <h:outputFormat value="#{messages.label_welcome_titlepane}">
+          <f:param value="#{applicationBean.appName}" />
+        </h:outputFormat>
+      </f:facet>
+      <p />
+      <h:outputText id="welcomeText" value="Teacher #{messages.label_welcome_text}" />
+      <br/>
+      <div id="media" style="height:200px">
+        <h:form prependId="false" id="mainForm">
+	      <p:dashboard id="board" model="#{personnelBean.teacherBoardModel}">
+	        <p:panel id="actions" header="Actions" style="width=300px; height:150px;">
+	            
+	        </p:panel>
+	        
+	        <p:panel id="accountSetting" header="Account Setting" style="width=300px; height:150px;">
+	            <p:commandLink value="Edit Teacher Information" action="#{personnelBean.queryPersonnelInfo}"
+	              oncomplete="PF('editDialogWidget').show()" style="color: blue"
+	              update=":editForm:editPanelGrid" />
+	            <br/>
+	            <p:commandLink value="View Teacher Information" action="#{personnelBean.queryPersonnelInfo}"
+	              oncomplete="PF('viewDialogWidget').show()" style="color: blue"
+	              update=":viewForm:viewPanelGrid" />
+	            <br/>
+	            <p:commandLink value="Change Teacher Password" action="#{personnelBean.queryPersonnelInfo}"
+	              oncomplete="PF('changePasswordDialogWidget').show()" style="color: blue"
+	              update=":changePasswordForm:changePasswordPanelGrid" />
+	        </p:panel>
+	      </p:dashboard>
+	      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+	    </h:form>
+      </div>
+    </p:panel>
+    
+    <h:form prependId="false" id="growlForm">
+      <p:growl id="growl" showDetail="false" />
+      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    </h:form>
+    
+    <h:outputText value="Listed below are all your current classes:" 
+      style="font-size: 20px; color: blue"/>
+      
+    <h:form prependId="false" id="dataForm">
+        <ui:include src="../include/semestercoursetable.xhtml" />
+        <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+    </h:form>
+    
+    <ui:include src="../include/actiondialogssemestercourse.xhtml" />
+    <ui:include src="../include/actiondialogspersonnel.xhtml" />
+      
+  </ui:define>
+</ui:composition>
+</html>

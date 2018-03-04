@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collection;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -80,6 +81,8 @@ public class ApplicationBean  implements Serializable {
     
     private String strSearchTerm = "";
     
+    private List<Family> filteredFamily;
+    
     @Value("${user.api.server.rest.uri}")
 	public String uri;
 	
@@ -137,6 +140,14 @@ public class ApplicationBean  implements Serializable {
 		this.strSearchTerm = strSearchTerm;
 	}
 
+	public List<Family> getFilteredFamily() {
+		return filteredFamily;
+	}
+
+	public void setFilteredFamily(List<Family> filteredFamily) {
+		this.filteredFamily = filteredFamily;
+	}
+	
 	public String login() throws ServletException, IOException {
         //String url = "/resources/j_spring_security_check?j_username=" + username + "&j_password=" + password;
         
@@ -164,7 +175,11 @@ public class ApplicationBean  implements Serializable {
 	    			familyLazyModel = new MyLazyFamilyDataModel(familyRepository, "", null);
 	    			//familyLazyModel.load(0, 15, Utils.DEFAULT_FAMILY_SORT_FIELD, SortOrder.ASCENDING, null);
 	    			
-	    			strRedirect = "/pages/admin/sellermain";
+	    			strRedirect = "/pages/admin/mainseller";
+	    		}
+	    		else if (Utils.hasRole(Utils.ROLE_XILINTEACHER))
+	    		{
+	    			strRedirect = "/pages/admin/mainteacher";
 	    		}
 	    		else if (Utils.hasRole(Utils.ROLE_XILINFAMILY))
 	    		{
@@ -208,7 +223,7 @@ public class ApplicationBean  implements Serializable {
     public String searchFamilies() {
 		familyLazyModel = new MyLazyFamilyDataModel(familyRepository, strSearchTerm, null);
 		
-		return "/pages/admin/sellermain";
+		return "/pages/admin/mainseller";
 	}
     
     public String processUserForgotLogin() {

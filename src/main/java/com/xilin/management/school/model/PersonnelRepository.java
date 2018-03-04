@@ -8,6 +8,7 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface PersonnelRepository extends JpaSpecificationExecutor<Personnel>, JpaRepository<Personnel, Integer> {
 	public List<Personnel> findByEmailIgnoreCase(String email);
+	public List<Personnel> findByLoginIdIgnoreCase(String loginId);
 	public List<Personnel> findByEmailOrLoginIdIgnoreCase(String email, String loginId);
 
 	public List<Personnel> findAllByOrderByLastnameAsc();

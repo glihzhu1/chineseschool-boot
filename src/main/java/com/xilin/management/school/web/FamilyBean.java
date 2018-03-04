@@ -201,10 +201,8 @@ public class FamilyBean implements Serializable {
     }
 
 	public String findAllFamilys() {
-        //allFamilys = familyRepository.findAll();
         familyLazyModel = new MyLazyFamilyDataModel(familyRepository, null, null);
 
-        //dataVisible = !allFamilys.isEmpty();
         return "/pages/admin/family";
     }
 	
@@ -384,17 +382,19 @@ public class FamilyBean implements Serializable {
 				family.setUpdatedBy(loginUsername);
     			family.setUpdatedtime(GregorianCalendar.getInstance());
 				familyRepository.save(family);
-	            
-			}
-			
-			//Create or update father and mother as students 
-            //A little lessss-- No need for now.
-			if(auser != null) {
-				message = "message_successfully_updated_need_reset_password";
+				
+				if(auser != null) {
+					message = "message_successfully_updated_need_reset_password";
+				}
+				else {
+					message = "message_successfully_updated";
+				}
 			}
 			else {
-				message = "message_successfully_updated";
+				message = "message_insuccessfully_updated";
 			}
+			
+			
         } else {
             if(!familyLogin.isEmpty() && !familyPassword.isEmpty()
         			&& !family.getEmail().isEmpty()) {

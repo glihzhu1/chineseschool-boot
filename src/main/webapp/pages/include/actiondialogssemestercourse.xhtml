@@ -1,0 +1,103 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	
+	
+    <p:dialog id="listStudentDialog" header="List Class Students" modal="true" widgetVar="listStudentDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      <p:ajax event="close" update=":dataForm:data" listener="#{semestercourseBean.handleDialogClose}" />
+      <p:outputPanel id="listStudentPanel">
+        <h:form id="listStudentForm" enctype="multipart/form-data">
+          <p:panel id="listStudentPanelGrid">  
+            <p:dataTable var="student" value="#{semestercourseBean.selectedStudents}" 
+				emptyMessage="no students found for the class" rowKey="#{student.id}" 
+		             selection="#{semestercourseBean.student}" selectionMode="single"
+		             style="width:800px;">
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Student ID -Status" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{student.id}" />
+					<h:outputText value="#{student.active? ' -A' : ' -I'}" style="font-weight: bold; color: red;"/>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Name" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{student.firstname} #{student.lastname}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Family Email" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{student.familyid.email}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Birth Date" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{student.dob.time}" >
+						<f:convertDateTime pattern="MM/dd/yyyy" type="date"/>
+					</h:outputText>
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Gender" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{student.gender}" />
+				</p:column>
+				
+				<p:column styleClass="action-column">
+		            <f:facet name="header">
+		              <h:outputText value="Actions" />
+		            </f:facet>
+		            <p:menuButton value="More">
+						<p:menuitem value="Send Email" icon="ui-icon-zoomin"
+			            	actionListener="#{semestercourseBean.displayEmailStudentDialogOne}"
+			            	oncomplete="PF('emailStudentDialogOneWidget').show()"
+			      			update=":emailStudentDialogOne">
+			      			<f:param name="studentrowid" value="#{student.id}"/>
+		      			</p:menuitem>
+		      		</p:menuButton>
+				</p:column>
+		    </p:dataTable>
+	      </p:panel>
+	      <p:commandButton id="listStudentCloseButton" value="#{messages.label_close}" onclick="PF('listStudentDialogWidget').hide()" type="button" />
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
+    
+    <p:dialog id="emailStudentDialogOne" header="Email Student"
+		width="600" height="300" styleClass="center-block"
+    	modal="true" widgetVar="emailStudentDialogOneWidget" dynamic="true" 
+    	visible="#{semestercourseBean.emailStudentDialogOneVisible}"
+    	showEffect="fade" hideEffect="explode">
+      <p:ajax event="close" listener="#{semestercourseBean.handleDialogClose}" />
+      <p:outputPanel id="emailStudentOnePanel">
+        <h:form id="emailStudentOneForm">
+          <h:panelGrid id="emailStudentOnePanelGrid" columns="3" 
+          	styleClass="dialog" columnClasses="col1,col2,col3" >
+          		<h:outputLabel value="Subject: " />
+          		<h:inputText size="50" value="#{semestercourseBean.toStudentEmailSubject}" />
+          		
+          		<br/>
+      			<h:outputLabel value="Message: " />
+      			<h:inputTextarea rows="5" cols="51" id="emailOneMessage"
+      				value="#{semestercourseBean.toStudentEmailMsg}" 
+      				required="true" requiredMessage="Email message cannot be empty"/>	
+      			<h:message for="emailOneMessage" style="color:red" />
+      			
+    		</h:panelGrid>
+    		<br />
+          <p:commandButton value="Submit" action="#{semestercourseBean.sendSelectedStudentEmail}" update="emailStudentOnePanelGrid" />
+          <p:commandButton value="#{messages.label_close}" onclick="PF('emailStudentDialogOneWidget').hide()" type="button" />
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
+    
+</ui:composition>

@@ -296,6 +296,12 @@ public class Utils {
         if(response.getStatusCode() == HttpStatus.OK){
         	return true;
         }
+        else if(response.getStatusCode() == HttpStatus.FOUND){
+        	logger.error("The loginId or email is used by anotehr user, updateUserJson possible error with input: " + input);
+        }
+        else if(response.getStatusCode() == HttpStatus.MULTI_STATUS){
+        	logger.error("Too many users with this loginId or email, updateUserJson possible error with input: " + input);
+        }
         else {
         	logger.error("updateUserJson possible error with input: " + input);
         }

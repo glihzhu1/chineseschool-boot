@@ -48,7 +48,7 @@
         <p:dataTable id="list" value="#{applicationBean.familyLazyModel}" var="family" 
         	emptyMessage="no items found" rowKey="#{family.id}" 
             selection="#{familyBean.family}" selectionMode="single"
-            filteredValue="#{familyBean.filteredFamily}" rowExpandMode="single"
+            filteredValue="#{applicationBean.filteredFamily}" rowExpandMode="single"
         	paginator="true" paginatorTemplate="{CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}"
         	rowsPerPageTemplate="15,30,50" rows="15" lazy="true">
         <p:ajax event="page" update="@this :dataForm:ajaxStatus"/>
@@ -138,7 +138,7 @@
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     </h:form>
     
-    <ui:include src="../include/familyactiondialogs.xhtml" />
+    <ui:include src="../include/actiondialogsfamily.xhtml" />
     
   </ui:define>
 </ui:composition>
