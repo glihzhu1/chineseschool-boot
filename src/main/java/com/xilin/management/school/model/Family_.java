@@ -10,7 +10,6 @@ import javax.persistence.metamodel.StaticMetamodel;
 @StaticMetamodel(Family.class)
 public class Family_ {
 	public static volatile SingularAttribute<Family, Integer> id;
-	public static volatile SetAttribute<Family, Registration> registrations;
 	public static volatile SetAttribute<Family, Student> students;
 	public static volatile SingularAttribute<Family, Character> type;
 	public static volatile SingularAttribute<Family, String> fatherlastname;

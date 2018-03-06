@@ -9,6 +9,7 @@ import org.springframework.stereotype.Repository;
 public interface FamilytransactionRepository extends JpaRepository<Familytransaction, Integer>, JpaSpecificationExecutor<Familytransaction> {
 
 	public List<Familytransaction> findBySemesteridAndStudentidAndTransactiontype(Semester semesterid, Student studentid, String transactiontype);
+	public List<Familytransaction> findBySemestercourseidAndStudentidAndTransactiontype(Semestercourse semestercourseid, Student studentid, String transactiontype);
 
 	public List<Familytransaction> findBySemesteridAndFamilyidOrderByStudentidAsc(Semester semesterid, Family familyid);
 	

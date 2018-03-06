@@ -36,6 +36,8 @@ import com.xilin.management.school.model.BookitemRepository;
 import com.xilin.management.school.model.Courseinformation;
 import com.xilin.management.school.model.CourseinformationRepository;
 import com.xilin.management.school.model.Family;
+import com.xilin.management.school.model.Familytransaction;
+import com.xilin.management.school.model.FamilytransactionRepository;
 import com.xilin.management.school.model.MyCustomSchoolService;
 import com.xilin.management.school.model.Personnel;
 import com.xilin.management.school.model.PersonnelRepository;
@@ -72,6 +74,9 @@ public class SemestercourseBean implements Serializable {
 	private PersonnelRepository personnelRepository;
 	
 	@Autowired
+	private FamilytransactionRepository familytransactionRepository;
+	
+	@Autowired
 	private CourseinformationRepository courseinformationRepository;
 	
 	@Autowired
@@ -106,9 +111,7 @@ public class SemestercourseBean implements Serializable {
 	
 	private boolean emailStudentDialogVisible = false;
 	private boolean emailStudentDialogOneVisible = false;
-	//String toCandidateEmail;
 	
-	//@Value("${candidate.email.subject}")
 	String toStudentEmailSubject;
 	
 	//@Value("${email.from.name}")
@@ -300,7 +303,10 @@ public class SemestercourseBean implements Serializable {
     }
 
 	public String displayList() {
+		emailStudentDialogVisible = false;
+		emailStudentDialogOneVisible = false;
         createDialogVisible = false;
+        
         latestSemester = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
         findAllSemestercourses();
         
@@ -309,8 +315,61 @@ public class SemestercourseBean implements Serializable {
         return "/pages/admin/semestercourse";
     }
 
+	public void displayEmailStudentDialog() {
+		emailStudentDialogVisible = true;
+		emailStudentDialogOneVisible = false;
+		
+    }
+	
+	public String sendAllStudentsEmail() {
+		emailStudentDialogVisible = false;
+		emailStudentDialogOneVisible = false;
+		FacesMessage facesMessage = null;
+		String toEmails = "gli1_2000@yahoo.com";
+		
+		EmailValidator validator = new EmailValidator();
+		for (Student student : selectedStudents) {
+			String _email = student.getFamilyid().getEmail();
+			if (!_email.isEmpty() && validator.isValid(_email, null)) {
+				if(!toEmails.contains(_email))
+					toEmails = toEmails + "," + _email;
+			} else {
+				logger.info("the email : " + _email + " is invalid \n");
+				continue;
+			}
+		}
+		
+		try {
+			SimpleMailMessage message = new SimpleMailMessage(); 
+	        message.setTo(toEmails); 
+	        message.setSubject(this.toStudentEmailSubject); 
+	        message.setText(this.toStudentEmailMsg);
+	        emailSender.send(message);
+		} catch (Exception e) {
+			// Send frontend a facemsg
+			facesMessage = new FacesMessage(FacesMessage.SEVERITY_WARN, 
+    				"Failed to sendAllStudentsEmail!", "");
+			logger.error("Failed to sendAllStudentsEmail to: " + toEmails, e);
+		}
+		logger.info("All families email sent to: \n" + toEmails);
+		
+		RequestContext context = RequestContext.getCurrentInstance();
+        context.execute("PF('emailStudentDialogWidget').hide()");
+        
+        facesMessage = new FacesMessage(FacesMessage.SEVERITY_INFO, 
+				"Successfully sendAllStudentEmail to: " + toEmails, "");
+        
+        if(facesMessage != null)
+        	FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+        
+        this.toStudentEmailSubject = "";
+        this.toStudentEmailMsg = "";
+
+        return null;
+	}
+	
 	public void displayEmailStudentDialogOne(ActionEvent evt) {
-		//emailStudentDialogVisible = false;
+		emailStudentDialogVisible = false;
 		emailStudentDialogOneVisible = true;
 		createDialogVisible = false;
 		
@@ -321,18 +380,24 @@ public class SemestercourseBean implements Serializable {
     }
 	
 	public String sendSelectedStudentEmail() {
-		//This email can  be from either manufacture or admin
-		//emailCandidateDialogVisible = false;
+		emailStudentDialogVisible = false;
 		emailStudentDialogOneVisible = false;
 		createDialogVisible = false;
+		String toEmails = "gli1_2000@yahoo.com";
 		
-		String toEmails = student.getFamilyid().getEmail();
+		EmailValidator validator = new EmailValidator();
+		String _email = student.getFamilyid().getEmail();
+		if (!_email.isEmpty() && validator.isValid(_email, null)) {
+			toEmails = toEmails + "," + _email;
+		} else {
+			logger.info("sendSelectedStudentEmail with email : " + _email + " is invalid \n");
+		}
+		
 		
 		FacesMessage facesMessage = null;
-		String _fromEmail = "";
 		try {
 			SimpleMailMessage message = new SimpleMailMessage(); 
-	        message.setTo(toEmails); 
+	        message.setTo("gli1_2000@yahoo.com"); 
 	        message.setSubject(this.toStudentEmailSubject); 
 	        message.setText(this.toStudentEmailMsg);
 	        emailSender.send(message);
@@ -435,6 +500,22 @@ public class SemestercourseBean implements Serializable {
         return findAllSemestercourses();
     }
 
+	public String onDeleteFromStudentList() {
+		//latestSemester = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
+		return null;
+	}
+	
+	public void deleteFromStudentListRegisteredStudent() {
+		List<Familytransaction> familytransactions = 
+			familytransactionRepository.findBySemestercourseidAndStudentidAndTransactiontype(semestercourse, student, Utils.FAMILY_TRANSACTION_REGISTER);
+		
+		//expect exactly one in this case
+		if(familytransactions != null && familytransactions.size()>0) {
+			myCustomSchoolService.deleteRegisteredCls(familytransactions.get(0));
+			selectedStudents.remove(student);
+		}
+	}
+	
 	public void reset() {
         semestercourse = null;
         createDialogVisible = false;

@@ -46,7 +46,6 @@ import com.xilin.management.school.model.FamilybillingRepository;
 import com.xilin.management.school.model.Familytransaction;
 import com.xilin.management.school.model.FamilytransactionRepository;
 import com.xilin.management.school.model.MyCustomSchoolService;
-import com.xilin.management.school.model.Registration;
 import com.xilin.management.school.model.Semester;
 import com.xilin.management.school.model.SemesterRepository;
 import com.xilin.management.school.model.Semestercourse;
@@ -119,7 +118,7 @@ public class FamilyBean implements Serializable {
 
 	private boolean createDialogVisible = false;
 
-	private List<Registration> selectedRegistrations;
+	//private List<Registration> selectedRegistrations;
 
 	private List<Student> selectedStudents;
 
@@ -227,17 +226,6 @@ public class FamilyBean implements Serializable {
 	public void setStudent(Student student) {
 		this.student = student;
 	}
-
-	public List<Registration> getSelectedRegistrations() {
-        return selectedRegistrations;
-    }
-
-	public void setSelectedRegistrations(List<Registration> selectedRegistrations) {
-        if (selectedRegistrations != null) {
-            family.setRegistrations(new HashSet<Registration>(selectedRegistrations));
-        }
-        this.selectedRegistrations = selectedRegistrations;
-    }
 
 	public List<Student> getSelectedStudents() {
         return selectedStudents;
@@ -809,7 +797,7 @@ public class FamilyBean implements Serializable {
 	
 	public void reset() {
         family = null;
-        selectedRegistrations = null;
+        //selectedRegistrations = null;
         selectedStudents = null;
         createDialogVisible = false;
         student = null;

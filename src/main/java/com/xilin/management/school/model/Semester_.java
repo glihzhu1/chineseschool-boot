@@ -12,7 +12,6 @@ import javax.persistence.metamodel.StaticMetamodel;
 public class Semester_ {
 	public static volatile SetAttribute<Semester, Familytransaction> familytransactions;
 	public static volatile SetAttribute<Semester, Familybilling> familybillings;
-	public static volatile SetAttribute<Semester, Registration> registrations;
 	public static volatile SetAttribute<Semester, Semestercourse> semestercourses;
 	public static volatile SetAttribute<Semester, Semesterweek> semesterweeks;
 	public static volatile SetAttribute<Semester, Semestercourse> semestercourse;

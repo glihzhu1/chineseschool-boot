@@ -30,8 +30,8 @@ public class Semester {
 	@OneToMany(mappedBy = "semesterid")
     private Set<Familybilling> familybillings;
 
-	@OneToMany(mappedBy = "semesterid")
-    private Set<Registration> registrations;
+	//@OneToMany(mappedBy = "semesterid")
+    //private Set<Registration> registrations;
 
 	@OneToMany(mappedBy = "semesterid")
     private Set<Semestercourse> semestercourses;
@@ -126,14 +126,14 @@ public class Semester {
 	public void setFamilybillings(Set<Familybilling> familybillings) {
         this.familybillings = familybillings;
     }
-
+/*
 	public Set<Registration> getRegistrations() {
         return registrations;
     }
 
 	public void setRegistrations(Set<Registration> registrations) {
         this.registrations = registrations;
-    }
+    }*/
 
 	public Set<Semestercourse> getSemestercourses() {
         return semestercourses;

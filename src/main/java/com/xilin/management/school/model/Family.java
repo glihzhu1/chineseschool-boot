@@ -34,8 +34,8 @@ public class Family {
         this.id = id;
     }
 
-	@OneToMany(mappedBy = "familyid")
-    private Set<Registration> registrations;
+	//@OneToMany(mappedBy = "familyid")
+    //private Set<Registration> registrations;
 
 	@OneToMany(mappedBy = "familyid")
     private Set<Student> students;
@@ -118,13 +118,13 @@ public class Family {
 	@Column(name = "updatedBy", length = 40)
     private String updatedBy;
 
-	public Set<Registration> getRegistrations() {
+	/*public Set<Registration> getRegistrations() {
         return registrations;
     }
 
 	public void setRegistrations(Set<Registration> registrations) {
         this.registrations = registrations;
-    }
+    }*/
 
 	public Set<Student> getStudents() {
         return students;

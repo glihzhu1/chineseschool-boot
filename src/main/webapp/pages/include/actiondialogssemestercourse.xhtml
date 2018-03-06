@@ -3,6 +3,7 @@
 	xmlns:h="http://java.sun.com/jsf/html"
 	xmlns:ui="http://java.sun.com/jsf/facelets"
 	xmlns:p="http://primefaces.org/ui"
+	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	xmlns:pe="http://primefaces.org/ui/extensions">
 	
 	
@@ -53,8 +54,15 @@
 		            <f:facet name="header">
 		              <h:outputText value="Actions" />
 		            </f:facet>
+		            <p:commandButton id="deregisterStudentButton" icon="fa fa-fw fa-close"
+		              action="#{semestercourseBean.onDeleteFromStudentList}"
+		              update="deleteFromStudentListDialog" oncomplete="PF('deleteFromStudentListDialogWidget').show()" title="#{messages.label_create}">
+		              <f:setPropertyActionListener value="#{student}" target="#{semestercourseBean.student}" />
+		            </p:commandButton>
+		            <p:tooltip for="deregisterStudentButton" position="top" value="Deregister" showEffect="fade" hideEffect="fade" />
+		            
 		            <p:menuButton value="More">
-						<p:menuitem value="Send Email" icon="ui-icon-zoomin"
+						<p:menuitem value="Email Family" icon="ui-icon-zoomin"
 			            	actionListener="#{semestercourseBean.displayEmailStudentDialogOne}"
 			            	oncomplete="PF('emailStudentDialogOneWidget').show()"
 			      			update=":emailStudentDialogOne">
@@ -64,12 +72,59 @@
 				</p:column>
 		    </p:dataTable>
 	      </p:panel>
-	      <p:commandButton id="listStudentCloseButton" value="#{messages.label_close}" onclick="PF('listStudentDialogWidget').hide()" type="button" />
+	      
+	      <p:commandButton id="listStudentExportPdfButton" value="Export PDF"
+	        onclick="PF('listStudentDialogWidget').hide()" type="button" />
+          <p:commandButton id="emailAllFamiliesButton" value="Email Class Families" 
+            oncomplete="PF('emailStudentDialogWidget').show()"
+            action="#{semestercourseBean.displayEmailStudentDialog}" update=":emailStudentForm:emailStudentPanelGrid" />
+          <p:commandButton id="listStudentCloseButton" value="#{messages.label_close}" onclick="PF('listStudentDialogWidget').hide()" type="button" />
           <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
         </h:form>
       </p:outputPanel>
     </p:dialog>
     
+    <p:confirmDialog id="deleteFromStudentListDialog" widgetVar="deleteFromStudentListDialogWidget" message="#{messages.label_delete_record}" showEffect="fade" hideEffect="explode" header="#{messages.label_confirm_deletion}" severity="alarm">
+      <p:outputPanel id="deleteFromStudentListPanel">
+        <h:form id="deleteFromStudentListForm">
+          <p:commandButton id="deleteFromStudentListYesButton" value="#{messages.label_yes}" action="#{semestercourseBean.deleteFromStudentListRegisteredStudent}" 
+          	update=":listStudentForm:listStudentPanelGrid" 
+          	oncomplete="PF('deleteFromStudentListDialogWidget').hide()" />
+          <p:commandButton id="deleteFromStudentListNoButton" value="#{messages.label_no}" onclick="PF('deleteFromStudentListDialogWidget').hide()" type="button" />
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </h:form>
+      </p:outputPanel>
+    </p:confirmDialog>
+    
+    <p:dialog id="emailStudentDialog" header="Email All Student's Families"
+		width="600" height="300" styleClass="center-block"
+    	modal="true" widgetVar="emailStudentDialogWidget" dynamic="true" 
+    	visible="#{semestercourseBean.emailStudentDialogVisible}" 
+    	showEffect="fade" hideEffect="explode">
+      <p:ajax event="close" listener="#{semestercourseBean.handleDialogClose}" />
+      <p:outputPanel id="emailStudentPanel">
+        <h:form id="emailStudentForm">
+          <h:panelGrid id="emailStudentPanelGrid" columns="4" 
+          	styleClass="dialog" columnClasses="col1,col2" >
+          		<h:outputLabel value="Subject: " />
+          		<h:inputText id="emailSubject" required="true" requiredMessage="Email subject is required"
+          		  size="50" value="#{semestercourseBean.toStudentEmailSubject}" />
+	            <p:watermark for="emailSubject" value="Subject Required" />
+	          	<p:message for="emailSubject"></p:message>
+	          	
+      			<h:outputLabel value="Message: " />
+      			<h:inputTextarea rows="5" cols="51" id="emailMessage"
+      				value="#{semestercourseBean.toStudentEmailMsg}" 
+      				required="true" requiredMessage="Email message cannot be empty"/>	
+      			<h:message for="emailMessage" style="color:red" />
+      			
+    		</h:panelGrid>
+    		<br />
+          <p:commandButton id="submitEmailButton" value="Submit" action="#{semestercourseBean.sendAllStudentsEmail}" update="emailStudentPanelGrid" />
+          <p:commandButton id="emailCloseButton" value="#{messages.label_close}" onclick="PF('emailStudentDialogWidget').hide()" type="button" />
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
     
     <p:dialog id="emailStudentDialogOne" header="Email Student"
 		width="600" height="300" styleClass="center-block"
@@ -79,12 +134,14 @@
       <p:ajax event="close" listener="#{semestercourseBean.handleDialogClose}" />
       <p:outputPanel id="emailStudentOnePanel">
         <h:form id="emailStudentOneForm">
-          <h:panelGrid id="emailStudentOnePanelGrid" columns="3" 
-          	styleClass="dialog" columnClasses="col1,col2,col3" >
+          <h:panelGrid id="emailStudentOnePanelGrid" columns="4" 
+          	styleClass="dialog" columnClasses="col1,col2" >
           		<h:outputLabel value="Subject: " />
-          		<h:inputText size="50" value="#{semestercourseBean.toStudentEmailSubject}" />
-          		
-          		<br/>
+          		<h:inputText id="emailOneSubject" required="true" requiredMessage="Email subject is required"
+          		  size="50" value="#{semestercourseBean.toStudentEmailSubject}" />
+	            <p:watermark for="emailOneSubject" value="Subject Required" />
+	          	<p:message for="emailOneSubject"></p:message>
+	          	
       			<h:outputLabel value="Message: " />
       			<h:inputTextarea rows="5" cols="51" id="emailOneMessage"
       				value="#{semestercourseBean.toStudentEmailMsg}" 
