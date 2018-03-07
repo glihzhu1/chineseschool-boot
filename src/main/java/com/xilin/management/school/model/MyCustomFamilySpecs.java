@@ -34,7 +34,7 @@ public class MyCustomFamilySpecs {
 	
 	
 	public static Specification<Family> loadFullSearchFamilies(final String searchTerm, final Map<String, String>myDropdownPredicateMap,
-			final Map<String, String>myFilterByPredicateMap) {
+			final Map<String, Object>myFilterByPredicateMap) {
 	    return new Specification<Family>() {
 	      public Predicate toPredicate(Root<Family> root, CriteriaQuery<?> query,
 	            CriteriaBuilder builder) {
@@ -151,12 +151,12 @@ public class MyCustomFamilySpecs {
         return builder.and(predicates.toArray(new Predicate[predicates.size()]));
 	}
 	*/
-	private static Predicate createFilterByPredicate(Root<Family> root, CriteriaBuilder builder, Map<String, String>myPredicateMap) {
+	private static Predicate createFilterByPredicate(Root<Family> root, CriteriaBuilder builder, Map<String, Object>myPredicateMap) {
 		final List<Predicate> predicates = new ArrayList<Predicate>();
 
-        for (final Entry<String, String> e : myPredicateMap.entrySet()) {
+        for (final Entry<String, Object> e : myPredicateMap.entrySet()) {
         	String fieldName = e.getKey();
-            String value = e.getValue();
+            String value =(String) e.getValue();
 
             Path<String> expression = null;
             if ((fieldName != null) && (value != null)) {

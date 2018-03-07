@@ -7,6 +7,7 @@ import java.util.Date;
 import java.util.GregorianCalendar;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -18,8 +19,10 @@ import javax.faces.component.UIComponent;
 import javax.faces.context.FacesContext;
 import javax.faces.event.AjaxBehaviorEvent;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.slf4j.Logger;
+import org.primefaces.component.datatable.DataTable;
 import org.primefaces.context.RequestContext;
 import org.primefaces.event.CloseEvent;
 import org.primefaces.event.ToggleEvent;
@@ -33,6 +36,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Configurable;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 import org.springframework.web.jsf.FacesContextUtils;
@@ -45,6 +49,7 @@ import com.xilin.management.school.model.Familybilling;
 import com.xilin.management.school.model.FamilybillingRepository;
 import com.xilin.management.school.model.Familytransaction;
 import com.xilin.management.school.model.FamilytransactionRepository;
+import com.xilin.management.school.model.MyCustomFamilySpecs;
 import com.xilin.management.school.model.MyCustomSchoolService;
 import com.xilin.management.school.model.Semester;
 import com.xilin.management.school.model.SemesterRepository;
@@ -58,6 +63,8 @@ import com.xilin.management.school.model.Semesterweek;
 import com.xilin.management.school.model.SemesterweekRepository;
 import com.xilin.management.school.model.Student;
 import com.xilin.management.school.model.StudentRepository;
+import com.xilin.management.school.web.reports.JasperReportsPdfExporter;
+import com.xilin.management.school.web.reports.JasperReportsXlsExporter;
 import com.xilin.management.school.web.util.MessageFactory;
 import com.xilin.management.school.web.util.TransientUser;
 import com.xilin.management.school.web.util.Utils;
@@ -768,6 +775,48 @@ public class FamilyBean implements Serializable {
 		
 		myCustomSchoolService.deleteBoughtBook(familytransaction);
 		
+	}
+	
+	public void exportFamiliesPdf() {
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+		
+		//Locale bLocale = new Locale.Builder().setLanguage("en").setRegion("US").build();
+		Locale aLocale = facesContext.getViewRoot().getLocale();
+		
+		DataTable dataTable = (DataTable) FacesContext.getCurrentInstance().getViewRoot()
+                .findComponent("dataForm:list");
+		Map<String, Object> myfilterMap = dataTable.getFilters();
+		
+		List<Family> familyData = familyRepository.findAll(
+				MyCustomFamilySpecs.loadFullSearchFamilies(strSearchTerm, null, myfilterMap));
+		
+		Utils.export(familyData, Utils.TABLE_FAMILY_COLUMNS, response, new JasperReportsPdfExporter(), "families_report.pdf",  aLocale);
+		
+		facesContext.responseComplete();
+        facesContext.renderResponse();
+        
+	}
+	
+	public void exportFamiliesXls() {
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+		
+		//Locale bLocale = new Locale.Builder().setLanguage("en").setRegion("US").build();
+		Locale aLocale = facesContext.getViewRoot().getLocale();
+		
+		DataTable dataTable = (DataTable) FacesContext.getCurrentInstance().getViewRoot()
+                .findComponent("dataForm:list");
+		Map<String, Object> myfilterMap = dataTable.getFilters();
+		
+		List<Family> familyData = familyRepository.findAll(
+				MyCustomFamilySpecs.loadFullSearchFamilies(strSearchTerm, null, myfilterMap));
+		
+		Utils.export(familyData, Utils.TABLE_FAMILY_COLUMNS, response, new JasperReportsXlsExporter(), "families_report.xls",  aLocale);
+		
+		facesContext.responseComplete();
+        facesContext.renderResponse();
+        
 	}
 	
 	public void processBoughtBook() {

@@ -29,6 +29,10 @@
         <fontawesome.version>4.5.0</fontawesome.version>
         <jsf-mojarra.version>2.2.11</jsf-mojarra.version>
         <primefaces.version>6.0</primefaces.version>
+        
+        <dynamicjasper.version>5.0.11</dynamicjasper.version>
+    	<dynamicjasper-fonts.version>1.0</dynamicjasper-fonts.version>
+    
     </properties>
     
     <repositories>
@@ -250,7 +254,21 @@
             <artifactId>postgresql</artifactId>
             <scope>provided</scope>
         </dependency>
-        
+        <dependency>
+            <groupId>ar.com.fdvs</groupId>
+            <artifactId>DynamicJasper</artifactId>
+            <version>${dynamicjasper.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>ar.com.fdvs</groupId>
+            <artifactId>DynamicJasper-core-fonts</artifactId>
+            <version>${dynamicjasper-fonts.version}</version>
+        </dependency>
+        <dependency>
+	      <groupId>org.codehaus.groovy</groupId>
+	      <artifactId>groovy-all</artifactId>
+	      <version>2.4.7</version>
+	    </dependency>
 	</dependencies>
   
     <build>

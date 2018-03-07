@@ -73,8 +73,12 @@
 		    </p:dataTable>
 	      </p:panel>
 	      
-	      <p:commandButton id="listStudentExportPdfButton" value="Export PDF"
-	        onclick="PF('listStudentDialogWidget').hide()" type="button" />
+	      <h:commandButton id="listStudentExportPdfButton" value="Export PDF"
+	        onclick="this.form.target='_blank'"
+	        action="#{semestercourseBean.exportStudentsPdf}" />
+	      <h:commandButton id="listStudentExportXlsButton" value="Export Xls"
+	        onclick="this.form.target='_blank'"
+	        action="#{semestercourseBean.exportStudentsXls}" />
           <p:commandButton id="emailAllFamiliesButton" value="Email Class Families" 
             oncomplete="PF('emailStudentDialogWidget').show()"
             action="#{semestercourseBean.displayEmailStudentDialog}" update=":emailStudentForm:emailStudentPanelGrid" />

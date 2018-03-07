@@ -431,18 +431,16 @@
 		    </p:dataTable>
 		    
           </h:panelGrid>
-          
-         <!-- 
+           
           <p:panel header="Export PDF">  
 	       <p:commandLink id="pdf" ajax="false" process=":checkSemesterpodmembersForm">
 	         <p:graphicImage value="/resources/images/pdf.png"/>  
 	           <f:setPropertyActionListener value="true" target="#{exporterController.customExporter}" />  
-	         <pe:exporter type="pdf" target="podFamilies" fileName="listDetails" datasetPadding="4"/>  
-	  
+	           <pe:exporter type="pdf" target="podFamilies" fileName="listDetails" datasetPadding="4"/>
 	        </p:commandLink>    
 	  
 		  </p:panel> 
-	   --> 
+	   
           <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
         </h:form>
       </p:outputPanel>

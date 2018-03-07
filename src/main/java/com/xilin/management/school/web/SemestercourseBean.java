@@ -4,6 +4,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.GregorianCalendar;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -16,6 +17,7 @@ import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
 import javax.faces.model.SelectItemGroup;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 import org.hibernate.validator.internal.constraintvalidators.EmailValidator;
 import org.primefaces.context.RequestContext;
@@ -31,6 +33,8 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 import org.springframework.web.jsf.FacesContextUtils;
 
+import com.xilin.management.school.web.reports.JasperReportsPdfExporter;
+import com.xilin.management.school.web.reports.JasperReportsXlsExporter;
 import com.xilin.management.school.model.Bookitem;
 import com.xilin.management.school.model.BookitemRepository;
 import com.xilin.management.school.model.Courseinformation;
@@ -47,6 +51,7 @@ import com.xilin.management.school.model.Semestercourse;
 import com.xilin.management.school.model.SemestercourseRepository;
 import com.xilin.management.school.model.Student;
 import com.xilin.management.school.model.StudentRepository;
+import com.xilin.management.school.web.reports.JasperReportsExporter;
 import com.xilin.management.school.web.util.MessageFactory;
 import com.xilin.management.school.web.util.Utils;
 
@@ -315,6 +320,34 @@ public class SemestercourseBean implements Serializable {
         return "/pages/admin/semestercourse";
     }
 
+	public void exportStudentsPdf() {
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+		
+		//Locale bLocale = new Locale.Builder().setLanguage("en").setRegion("US").build();
+		Locale aLocale = facesContext.getViewRoot().getLocale();
+		
+		Utils.export(selectedStudents, Utils.TABLE_STUDENT_COLUMNS, response, new JasperReportsPdfExporter(), "students_report.pdf",  aLocale);
+		
+		facesContext.responseComplete();
+        facesContext.renderResponse();
+        
+	}
+	
+	public void exportStudentsXls() {
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+		
+		//Locale bLocale = new Locale.Builder().setLanguage("en").setRegion("US").build();
+		Locale aLocale = facesContext.getViewRoot().getLocale();
+		
+		Utils.export(selectedStudents, Utils.TABLE_STUDENT_COLUMNS, response, new JasperReportsXlsExporter(), "students_report.xls",  aLocale);
+		
+		facesContext.responseComplete();
+        facesContext.renderResponse();
+        
+	}
+	
 	public void displayEmailStudentDialog() {
 		emailStudentDialogVisible = true;
 		emailStudentDialogOneVisible = false;

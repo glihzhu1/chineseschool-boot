@@ -123,6 +123,12 @@
 		
         </p:dataTable>
         
+        <h:commandButton id="listFamilyExportPdfButton" value="Export PDF"
+	        onclick="this.form.target='_blank'"
+	        action="#{applicationBean.exportFamiliesPdf}" />
+	    <h:commandButton id="listFamilyExportXlsButton" value="Export Excel"
+	        onclick="this.form.target='_blank'"
+	        action="#{applicationBean.exportFamiliesXls}" />
         <!-- 
 	     <p:panel header="Export PDF" rendered="#{request.isUserInRole('ROLE_XILINADMIN')}">  
 	       <p:commandLink id="pdf" ajax="false">  

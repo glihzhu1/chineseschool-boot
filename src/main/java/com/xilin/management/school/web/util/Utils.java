@@ -1,33 +1,30 @@
 package com.xilin.management.school.web.util;
 
-import java.security.NoSuchAlgorithmException;
+import java.io.IOException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang3.StringUtils;
 import org.apache.http.Header;
 import org.apache.http.auth.AuthScope;
 import org.apache.http.auth.UsernamePasswordCredentials;
 import org.apache.http.client.CredentialsProvider;
-import org.apache.http.config.Registry;
-import org.apache.http.config.RegistryBuilder;
-import org.apache.http.conn.socket.ConnectionSocketFactory;
-import org.apache.http.conn.socket.PlainConnectionSocketFactory;
-import org.apache.http.conn.ssl.NoopHostnameVerifier;
-import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
-import org.apache.http.conn.ssl.TrustSelfSignedStrategy;
 import org.apache.http.impl.client.BasicCredentialsProvider;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
-import org.apache.http.impl.client.HttpClients;
-import org.apache.http.impl.conn.PoolingHttpClientConnectionManager;
 import org.apache.http.message.BasicHeader;
-import org.apache.http.ssl.SSLContextBuilder;
 import org.apache.log4j.Logger;
 import org.primefaces.json.JSONObject;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Scope;
+import org.springframework.context.MessageSource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -41,12 +38,23 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
-import org.springframework.stereotype.Component;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
+
+import com.xilin.management.school.model.Student;
+import com.xilin.management.school.web.reports.ExportingErrorException;
+import com.xilin.management.school.web.reports.JasperReportsExporter;
+
+import ar.com.fdvs.dj.core.DynamicJasperHelper;
+import ar.com.fdvs.dj.core.layout.ClassicLayoutManager;
+import ar.com.fdvs.dj.domain.CustomExpression;
+import ar.com.fdvs.dj.domain.builders.ColumnBuilder;
+import ar.com.fdvs.dj.domain.builders.ColumnBuilderException;
+import ar.com.fdvs.dj.domain.builders.FastReportBuilder;
+import net.sf.jasperreports.engine.JRDataSource;
+import net.sf.jasperreports.engine.JRException;
+import net.sf.jasperreports.engine.JasperPrint;
+import net.sf.jasperreports.engine.data.JRBeanCollectionDataSource;
 
 public class Utils {
 	private static final Logger logger = Logger.getLogger(Utils.class);
@@ -99,6 +107,11 @@ public class Utils {
     
     public static final String POD_PERIOD_ONE = "12:00-13:50";
     public static final String POD_PERIOD_TWO = "14:00-15:50";
+    
+    public static final String[] TABLE_STUDENT_COLUMNS = new String[] {"id", "firstname", "lastname", "email", "gender", "dob"};
+    public static final String[] TABLE_FAMILY_COLUMNS = new String[] {"id", "fatherfirstname", "fatherlastname", "motherfirstname", "motherlastname", "homephone", "familyemail"};
+    //public static final String[] TABLE_FAMILY_COLUMNS = new String[] {"id", "fatherfirstname", "fatherlastname", "familyemail"};
+    private static MessageSource messageSource;
     
     public static GregorianCalendar dateDaysAgo(int days) {
     	GregorianCalendar dataCalendar= new GregorianCalendar();
@@ -468,4 +481,166 @@ public class Utils {
         
 	}
 	
+	public static void export(List<?> allobjects, String[] datatablesColumns, HttpServletResponse response, JasperReportsExporter exporter, String fileName, Locale locale) {
+	//public static <T> void export(List<T> allobjects, String[] datatablesColumns, HttpServletResponse response, JasperReportsExporter exporter, String fileName, Locale locale) {
+	//public static void export(List<Student> allstudents, String[] datatablesColumns, HttpServletResponse response, JasperReportsExporter exporter, String fileName, Locale locale) {
+        // Obtain the filtered and ordered elements
+        //Page<Alluser> allusers = getAlluserService().findAll(search, pageable);
+        
+        // Prevent generation of reports with empty data
+        if (allobjects == null || allobjects.isEmpty()) {
+            return;
+        }
+        
+        // Creates a new ReportBuilder using DynamicJasper library
+        FastReportBuilder builder = new FastReportBuilder();
+        
+        // IMPORTANT: By default, this application uses "export_default.jrxml"
+        // to generate all reports. If you want to customize this specific report,
+        // create a new ".jrxml" template and customize it. (Take in account the 
+        // DynamicJasper restrictions: 
+        // http://dynamicjasper.com/2010/10/06/how-to-use-custom-jrxml-templates/)
+        builder.setTemplateFile("templates/reports/export_default.jrxml");
+        
+        // The generated report will display the same columns as the Datatables component.
+        // However, this is not mandatory. You could edit this code if you want to ignore
+        // the provided datatablesColumns
+        if (datatablesColumns != null) {
+            for (String column : datatablesColumns) {
+                // Delegates in addColumnToReportBuilder to include each datatables column
+                // to the report builder
+                addColumnToReportBuilder(column, builder, locale, fileName);
+            }
+        }
+        
+        // This property resizes the columns to use full width page.
+        // Set false value if you want to use the specific width of each column.
+        builder.setUseFullPageWidth(true);
+        
+        // Creates a new Jasper Reports Datasource using the obtained elements
+        JRDataSource ds = new JRBeanCollectionDataSource(allobjects);
+        
+        // Generates the JasperReport
+        JasperPrint jp;
+        try {
+            jp = DynamicJasperHelper.generateJasperPrint(builder.build(), new ClassicLayoutManager(), ds);
+        }
+        catch (JRException e) {
+            String errorMessage = getMessageSource().getMessage("error_exportingErrorException", 
+                new Object[] {StringUtils.substringAfterLast(fileName, ".").toUpperCase()}, 
+                String.format("Error while exporting data to StringUtils file", StringUtils.
+                    substringAfterLast(fileName, ".").toUpperCase()), locale);
+            throw new ExportingErrorException(errorMessage);
+        }
+        
+        // Converts the JaspertReport element to a ByteArrayOutputStream and
+        // write it into the response stream using the provided JasperReportExporter
+        try {
+            exporter.export(jp, fileName, response);
+        }
+        catch (JRException e) {
+            String errorMessage = getMessageSource().getMessage("error_exportingErrorException", 
+                new Object[] {StringUtils.substringAfterLast(fileName, ".").toUpperCase()}, 
+                String.format("Error while exporting data to StringUtils file", StringUtils.
+                    substringAfterLast(fileName, ".").toUpperCase()), locale);
+            throw new ExportingErrorException(errorMessage);
+        }
+        catch (IOException e) {
+            String errorMessage = getMessageSource().getMessage("error_exportingErrorException", 
+                new Object[] {StringUtils.substringAfterLast(fileName, ".").toUpperCase()}, 
+                String.format("Error while exporting data to StringUtils file", StringUtils.
+                    substringAfterLast(fileName, ".").toUpperCase()), locale);
+            throw new ExportingErrorException(errorMessage);
+        }
+    }
+
+	public static void addColumnToReportBuilder(String columnName, FastReportBuilder builder, Locale locale, String fileName) {
+        try {
+	        if (columnName.equals("id")) {
+	            builder.addColumn("Id", "id", Integer.class.getName(), 50);
+	        }
+	        else if (columnName.equals("fatherfirstname")) {
+	            builder.addColumn("Father Firstname", "fatherfirstname", String.class.getName(), 50);
+	        }
+	        else if (columnName.equals("fatherlastname")) {
+	            builder.addColumn("Father Lastname", "fatherlastname", String.class.getName(), 50);
+	        }
+	        else if (columnName.equals("familyemail")) {
+	            builder.addColumn("Email", "email", String.class.getName(), 50);
+	        }
+	        else if (columnName.equals("motherfirstname")) {
+	            builder.addColumn("Mother Firstname", "motherfirstname", String.class.getName(), 50);
+	        }
+	        else if (columnName.equals("homephone")) {
+	            builder.addColumn("Home Phone", "homephone", String.class.getName(), 50);
+	        }
+	        else if (columnName.equals("motherlastname")) {
+	            builder.addColumn("Mother Lastname", "motherlastname", String.class.getName(), 50);
+	        }
+	        else if (columnName.equals("gender")) {
+	            builder.addColumn("Gender", "gender", Character.class.getName(), 50);
+	        }
+	        else if (columnName.equals("email")) {
+	            builder.addColumn("Email", "familyid.email", String.class.getName(), 100);
+	        }
+	        else if (columnName.equals("firstname")) {
+	            builder.addColumn("Firstname", "firstname", String.class.getName(), 100);
+	        }
+	        else if (columnName.equals("lastname")) {
+	            builder.addColumn("Lastname", "lastname", String.class.getName(), 100);
+	        }
+	        else if (columnName.equals("dob")) {
+	        	ColumnBuilder time = ColumnBuilder.getNew();
+	        	time.setTitle("Date of Birth");
+	        	time.setWidth(100);
+	        	//time.setColumnProperty("dob", GregorianCalendar.class.getName()).setPattern("dd/MM/yyyy hh:mm:ss a");
+	        	time.setColumnProperty("dob", Calendar.class.getName());
+	        	
+	        	time.setCustomExpression(new CustomExpression() {
+                    public Object evaluate(Map fields, Map variables, Map parameters) {
+                    	Calendar cal = (Calendar)fields.get("dob");
+                    	int style = DateFormat.MEDIUM;
+                    	DateFormat format1 = DateFormat.getDateInstance(style, Locale.US);
+                    	//SimpleDateFormat format1 = new SimpleDateFormat("dd/MM/yyyy hh:mm:ss a");
+                    	String formatted = format1.format(cal.getTime());
+                        return formatted;
+                    }
+
+                    public String getClassName() {
+                        return Calendar.class.getName();
+                    }
+                });
+	        	
+	        	builder.addColumn(time.build());
+	        	//new SimpleDateFormat("dd/MM/yyyy").format($F{columnName});
+	            //builder.addColumn("Date of Birth", "dob", Calendar.class.getName(), 100);
+	        }
+	        else if (columnName.equals("lastUpdateDate")) {
+	            builder.addColumn("Last Update Date", "lastUpdateDate", Calendar.class.getName(), 100);
+	        }
+        }
+        catch (ColumnBuilderException e) {
+            String errorMessage = getMessageSource().getMessage("error_exportingErrorException", 
+                new Object[] {StringUtils.substringAfterLast(fileName, ".").toUpperCase()}, 
+                String.format("Error while exporting data to StringUtils file", StringUtils.
+                    substringAfterLast(fileName, ".").toUpperCase()), locale);
+            throw new ExportingErrorException(errorMessage);
+        }
+        catch (ClassNotFoundException e) {
+            String errorMessage = getMessageSource().getMessage("error_exportingErrorException", 
+                new Object[] {StringUtils.substringAfterLast(fileName, ".").toUpperCase()}, 
+                String.format("Error while exporting data to StringUtils file", StringUtils.
+                    substringAfterLast(fileName, ".").toUpperCase()), locale);
+            throw new ExportingErrorException(errorMessage);
+        }
+    }
+	
+	public static MessageSource getMessageSource() {
+		return messageSource;
+	}
+
+	public void setMessageSource(MessageSource messageSource) {
+		this.messageSource = messageSource;
+	}
+
 }

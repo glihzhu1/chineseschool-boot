@@ -88,7 +88,7 @@ public class MyLazyFamilyDataModel extends LazyDataModel<Family> {
 			}
 			PageRequest	pageable = new PageRequest(startingPage, maxPerPage, srt);
 			
-			HashMap<String, String> myfilterMap = new HashMap<String, String>();
+			HashMap<String, Object> myfilterMap = new HashMap<String, Object>();
 			//myfilterMap.put("strFirstName","ca");   
 			if (filters != null && !filters.isEmpty()) {
 				for (Iterator<String> it = filters.keySet().iterator(); it.hasNext();) {

@@ -5,6 +5,8 @@ import java.io.Serializable;
 import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -26,6 +28,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hibernate.validator.internal.constraintvalidators.EmailValidator;
+import org.primefaces.component.datatable.DataTable;
 import org.primefaces.context.RequestContext;
 import org.primefaces.model.LazyDataModel;
 import org.primefaces.model.SortOrder;
@@ -50,6 +53,9 @@ import com.octo.captcha.component.word.wordgenerator.RandomWordGenerator;
 import com.octo.captcha.component.word.wordgenerator.WordGenerator;
 import com.xilin.management.school.model.Family;
 import com.xilin.management.school.model.FamilyRepository;
+import com.xilin.management.school.model.MyCustomFamilySpecs;
+import com.xilin.management.school.web.reports.JasperReportsPdfExporter;
+import com.xilin.management.school.web.reports.JasperReportsXlsExporter;
 import com.xilin.management.school.web.util.TransientUser;
 import com.xilin.management.school.web.util.Utils;
 
@@ -226,6 +232,48 @@ public class ApplicationBean  implements Serializable {
 		return "/pages/admin/mainseller";
 	}
     
+    public void exportFamiliesPdf() {
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+		
+		//Locale bLocale = new Locale.Builder().setLanguage("en").setRegion("US").build();
+		Locale aLocale = facesContext.getViewRoot().getLocale();
+		
+		DataTable dataTable = (DataTable) FacesContext.getCurrentInstance().getViewRoot()
+                .findComponent("dataForm:list");
+		Map<String, Object> myfilterMap = dataTable.getFilters();
+		
+		List<Family> familyData = familyRepository.findAll(
+				MyCustomFamilySpecs.loadFullSearchFamilies(strSearchTerm, null, myfilterMap));
+		
+		Utils.export(familyData, Utils.TABLE_FAMILY_COLUMNS, response, new JasperReportsPdfExporter(), "families_report.pdf",  aLocale);
+		
+		facesContext.responseComplete();
+        facesContext.renderResponse();
+        
+	}
+	
+	public void exportFamiliesXls() {
+		FacesContext facesContext = FacesContext.getCurrentInstance();
+		HttpServletResponse response = (HttpServletResponse) facesContext.getExternalContext().getResponse();
+		
+		//Locale bLocale = new Locale.Builder().setLanguage("en").setRegion("US").build();
+		Locale aLocale = facesContext.getViewRoot().getLocale();
+		
+		DataTable dataTable = (DataTable) FacesContext.getCurrentInstance().getViewRoot()
+                .findComponent("dataForm:list");
+		Map<String, Object> myfilterMap = dataTable.getFilters();
+		
+		List<Family> familyData = familyRepository.findAll(
+				MyCustomFamilySpecs.loadFullSearchFamilies(strSearchTerm, null, myfilterMap));
+		
+		Utils.export(familyData, Utils.TABLE_FAMILY_COLUMNS, response, new JasperReportsXlsExporter(), "families_report.xls",  aLocale);
+		
+		facesContext.responseComplete();
+        facesContext.renderResponse();
+        
+	}
+	
     public String processUserForgotLogin() {
     	FacesContext context = FacesContext.getCurrentInstance();
 		// validate email
