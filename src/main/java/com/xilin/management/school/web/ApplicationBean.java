@@ -285,7 +285,7 @@ public class ApplicationBean  implements Serializable {
 			context.addMessage(null, new FacesMessage("The email provided: " + userEmail + " is invalid \n"));
             return null;
 		}
-    	
+		
 		//check user existed with the entered email
     	TransientUser users = Utils.retrieveUserEmailExistJson(userEmail, uri, apiusername, apipassword);
 		if(users == null){
@@ -433,7 +433,7 @@ public class ApplicationBean  implements Serializable {
         item = new DefaultMenuItem("Create Family");
         item.setId("createFamilyMenuItem");
         item.setCommand("#{familyBean.displayCreateDialog}");
-        item.setIcon("ui-icon ui-icon-document");
+        item.setIcon("ui-icon ui-icon-plus");
         item.setAjax(false);
         item.setAsync(false);
         item.setUpdate(":dataForm:data");
@@ -442,7 +442,7 @@ public class ApplicationBean  implements Serializable {
         item = new DefaultMenuItem("Create Personnel");
         item.setId("createPersonnelMenuItem");
         item.setCommand("#{personnelBean.displayCreateDialog}");
-        item.setIcon("ui-icon ui-icon-document");
+        item.setIcon("ui-icon ui-icon-plus");
         item.setAjax(false);
         item.setAsync(false);
         item.setUpdate(":dataForm:data");
@@ -476,19 +476,19 @@ public class ApplicationBean  implements Serializable {
         taskSubmenu = new DefaultSubMenu("Tasks");
         taskSubmenu.setId("taskSubmenu");
         
-        taskItem = new DefaultMenuItem("New Semester");
+        taskItem = new DefaultMenuItem("Create Semester");
         taskItem.setId("createSemesterMenuItem");
         taskItem.setCommand("#{semesterBean.displayCreateDialog}");
-        taskItem.setIcon("ui-icon ui-icon-document");
+        taskItem.setIcon("ui-icon ui-icon-plus");
         taskItem.setAjax(false);
         taskItem.setAsync(false);
         taskItem.setUpdate(":dataForm:data");
         taskSubmenu.addElement(taskItem);
         
-        taskItem = new DefaultMenuItem("Add Book");
+        taskItem = new DefaultMenuItem("Create Book");
         taskItem.setId("createBookitemMenuItem");
         taskItem.setCommand("#{bookitemBean.displayCreateDialog}");
-        taskItem.setIcon("ui-icon ui-icon-document");
+        taskItem.setIcon("ui-icon ui-icon-plus");
         taskItem.setAjax(false);
         taskItem.setAsync(false);
         taskItem.setUpdate(":dataForm:data");
@@ -521,19 +521,19 @@ public class ApplicationBean  implements Serializable {
         classSubmenu = new DefaultSubMenu("Classes");
         classSubmenu.setId("classSubmenu");
         
-        classItem = new DefaultMenuItem("New Class");
+        classItem = new DefaultMenuItem("Create Class");
         classItem.setId("createClassMenuItem");
         classItem.setCommand("#{semestercourseBean.displayCreateDialog}");
-        classItem.setIcon("ui-icon ui-icon-document");
+        classItem.setIcon("ui-icon ui-icon-plus");
         classItem.setAjax(false);
         classItem.setAsync(false);
         classItem.setUpdate(":dataForm:data");
         classSubmenu.addElement(classItem);
         
-        classItem = new DefaultMenuItem("Add Course");
+        classItem = new DefaultMenuItem("Create Course");
         classItem.setId("createCourseMenuItem");
         classItem.setCommand("#{courseinformationBean.displayCreateDialog}");
-        classItem.setIcon("ui-icon ui-icon-document");
+        classItem.setIcon("ui-icon ui-icon-plus");
         classItem.setAjax(false);
         classItem.setAsync(false);
         classItem.setUpdate(":dataForm:data");
@@ -559,6 +559,16 @@ public class ApplicationBean  implements Serializable {
         
         
         classMenuModel.addElement(classSubmenu);
+        
+        if(apiusername == null || apiusername.isEmpty()) {
+			apiusername =  System.getenv(Utils.API_USERNAME_KEY);
+		}
+        
+        if(apipassword == null || apipassword.isEmpty()) {
+        	apipassword =  System.getenv(Utils.API_PASSWORD_KEY);
+		}
+        
+        
         
     }
 

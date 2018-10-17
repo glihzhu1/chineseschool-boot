@@ -160,8 +160,9 @@
 		  </p:panel>  
 	     -->
 	  </p:panel>
+	  
 	  <p:panel id="studentsData" rendered="#{request.isUserInRole('ROLE_XILINFAMILY')}">  
-        <ui:include src="../include/studentstable.xhtml" />
+        <ui:include src="../include/studentstablewithclass.xhtml" />
 	  </p:panel>
       <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
     </h:form>

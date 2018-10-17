@@ -13,12 +13,20 @@
           <f:param value="#{applicationBean.appName}" />
         </h:outputFormat>
       </f:facet>
-      <p />
-      <h:outputText id="welcomeText" value="Familyyyy #{messages.label_welcome_text}" />
-      <br/>
-      <div id="media" style="height:200px">
+      
+        <div> 
+	      <h:form id="paypalPaymentForm">
+		      <h:outputText value="Your family due is: $" />
+		      <h:outputText id= "amtOriginalDue" value="#{familyBean.familyDue}" />
+		      <h:outputText value=". Enter how much you want to pay through paypal, then click the below button. $" />
+		      <h:inputText id="amtPayment" value="" size="10"/>
+	      </h:form>
+	    </div>
+	    <div id="paypal-button"></div>
+      
+      <div id="media" style="height:180px">
         <h:form prependId="false" id="mainForm">
-	      <p:dashboard id="board" model="#{familyBean.boardModel}">
+          <p:dashboard id="board" model="#{familyBean.boardModel}">
 	        <p:panel id="actions" header="Actions" style="width=300px; height:150px;">
 	            <p:commandLink value="My Family Payments" action="#{familyBean.queryFamilyInfoAndProcessPayment}"
 	              oncomplete="PF('processPaymentDialogWidget').show()" style="color: blue"
@@ -36,7 +44,12 @@
 	              oncomplete="PF('orderbookDialogWidget').show()" style="color: blue"
 	              update="orderbookDialog" />
 	            <br/>
-	          
+	            
+	            <h:outputLink value="https://developer.paypal.com/webapps/developer/docs/api/#payments"  
+			        target="_blank" style="color:blue;">
+	            	<h:outputText value="Pay through Paypay" />
+		        </h:outputLink>
+	            <br/>
 	        </p:panel>
 	        
 	        <p:panel id="accountSetting" header="Account Setting" style="width=300px; height:150px;">
@@ -56,15 +69,132 @@
 	      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
 	    </h:form>
       </div>
+
+      
     </p:panel>
-    
+
     <h:outputText value="Listed below are all the students in your family:" 
       style="font-size: 20px; color: blue"/>
     <ui:include src="../include/familystudents.xhtml" />
     
     <ui:include src="../include/actiondialogsfamily.xhtml" />
     
-      
+     <script>
+	    paypal.Button.render({
+	      env: 'sandbox', // Or 'sandbox' or 'production',
+	                     //for: gli1_2000-facilitator@yahoo.com  -- client ID and accesstoken
+	                     //AcNNjLtjTzUHniqIgWhmpHwlLS6t3--VPI9T68GI5-TENP2sZuc17IqWU7BF_lVDoQCZxGPbvr1YBRoh
+	                     //access_token$sandbox$jc862cmfpj945rrt$21b8248deaef010bd7225b559f068f0b
+	                     
+	                     //or use AZDxjDScFpQtjWTOUtWKbyN_bDt4OgqaF4eYXlewfBP4-8aqX3PiV8e1GWU6liB2CUXlkA59kJXE7M6R
+	      client: {
+	          sandbox:    'AZDxjDScFpQtjWTOUtWKbyN_bDt4OgqaF4eYXlewfBP4-8aqX3PiV8e1GWU6liB2CUXlkA59kJXE7M6R',
+	          production: 'MYKEY'
+	      },
+	      
+	      commit: true, // Show a 'Pay Now' button
+	
+	      style: {
+	        color: 'gold',
+	        size: 'small'
+	      },
+	
+	      payment: function(data, actions) {
+	    	  return new paypal.Promise(function(resolve, reject) {
+				  amt = jQuery('#paypalPaymentForm\\:amtPayment').val();
+
+				  if(!amt) {
+					exit();
+					//return false;
+				  }
+
+				  var floatAmt = parseFloat(amt);
+				  if(!floatAmt) {
+					exit();
+				  }
+				  
+	    	      var data = {
+	    		  	amount: amt,
+	    		  	currency: 'USD'
+	    	      };
+	
+	    	      jQuery.post('/apis/create-payment', data)
+	    		  .done(function(data) {
+	    		      //console.log(data);
+	    		      resolve(data.id); 
+	    		  })
+	    		  .fail(function(err) { 
+	    		      reject(err); 
+	    		  });
+	    	  });
+	    	},
+	    onAuthorize: function(data, actions) {
+		    var paymentId = data.paymentID;
+	    	  console.log('The payment was authorized!');
+	    	  console.log('Payment ID = ', paymentId);
+	    	  console.log('PayerID = ', data.payerID);
+
+	    	  amt = jQuery('#paypalPaymentForm\\:amtPayment').val();
+
+    	      console.log("auth amt =: " + amt);
+    	      
+	    	  var data = {
+	    	      paymentID: data.paymentID,
+	    	      payerID: data.payerID,
+	    	      amount: amt
+	    	  };
+
+	    	  jQuery.post('/apis/execute-payment', data)
+	    	      .done(function(data) { /* Go to a success page */
+	    	    	  document.getElementById("paymentConfirmText").innerHTML = "Your payment is successful! <br/>Your paymentID is " + paymentId + "<br/><br/>Thank you!";
+	    	    	  jQuery("#myModal").modal();
+
+	    	    	  //amtOriginalDue = jQuery('#paypalPaymentForm\\:amtOriginalDue').innerHTML;
+	    	    	  amtOriginalDue = jQuery('#paypalPaymentForm\\:amtOriginalDue').text();
+	    	    	  amtOriginalDue = parseFloat(amtOriginalDue) - parseFloat(amt);
+	    	    	  console.log("amtOriginalDue change to =: " + amtOriginalDue.toFixed(2));
+	    	    	  jQuery('#paypalPaymentForm\\:amtOriginalDue').text(amtOriginalDue.toFixed(2));
+	    	    	  jQuery('#paypalPaymentForm\\:amtPayment').val('');
+	    	    	  
+	    	    	  //window.location.replace('/pages/family/main.jsf');
+		    	  })
+	    	      .fail(function(err)  { /* Go to an error page  */  
+	    	    	  document.getElementById("paymentConfirmText").innerHTML = "Your payment failed! <br/>Sorry about the inconvenience, please try again later!<br/><br/>Thank you!";
+	    	    	  jQuery("#myModal").modal();
+		    	  });
+	   	  },
+	      onCancel: function(data, actions) {
+	    	  console.log('The payment was cancelled!');
+	          console.log('Payment ID = ', data.paymentID);
+	      },
+	      
+	      onError: function(err) {
+	    	  document.getElementById("paymentConfirmText").innerHTML = "Error occured with Paypal! <br/>Please make sure you enter a valid number for money and try again, <br/>if still having issues, please contact your school!<br/><br/>Thank you!";
+	    	  jQuery("#myModal").modal();
+	      }
+        }, '#paypal-button');
+
+    </script>
+    
+  
+  <!-- Modal -->
+  <div class="modal fade" id="myModal" role="dialog">
+    <div class="modal-dialog">
+      <!-- Modal content-->
+      <div class="modal-content">
+        <div class="modal-header">
+          <h4 class="modal-title">Your Paypal payment confirmation</h4>
+        </div>
+        <div class="modal-body">
+          <p id="paymentConfirmText">Some text in the modal.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
   </ui:define>
 </ui:composition>
 </html>

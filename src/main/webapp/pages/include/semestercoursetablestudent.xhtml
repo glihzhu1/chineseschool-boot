@@ -1,0 +1,65 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+  <p:panel id="data" toggleable="true" toggleSpeed="250">
+	<p:dataTable id="list" value="#{familyBean.registeredFamilytransactions}" rowKey="#{familytransaction.id}"
+        selection="#{familyBean.familytransaction}" selectionMode="single" 
+        emptyMessage="no class registered for the student" 
+        var="familytransaction" resizableColumns="true" 
+        widgetVar="familytransactionTable">
+
+			<p:column headerText="Course">
+            	<h:outputText value="#{familytransaction.semestercourseid.semestercoursecode}" />
+       		</p:column>
+       		<p:column headerText="Name">
+            	<h:outputText value="#{familytransaction.semestercourseid.courseinfoid.coursename}" >
+            	</h:outputText>
+        	</p:column>
+       		<p:column headerText="Time (Room)">
+            	<h:outputText value="#{familytransaction.semestercourseid.starttime}-#{familytransaction.semestercourseid.endtime} (#{familytransaction.semestercourseid.room})" >
+            	</h:outputText>
+        	</p:column>
+        	<p:column headerText="Price (capacity)">
+            	<h:outputText value="$#{familytransaction.semestercourseid.price} (#{familytransaction.semestercourseid.currentcapacity}/#{familytransaction.semestercourseid.maxcapacity} enrolled)" >
+            	</h:outputText>
+        	</p:column>
+        	<p:column headerText="Book">
+            	<p:commandLink value="#{familytransaction.semestercourseid.bookitemid ne null? familytransaction.semestercourseid.bookitemid.bookname : ''}"
+            		update="bookitemDetailrow" style="color: blue"
+            		oncomplete="PF('bookitemOProw').show('#{component.clientId}')">
+            		<f:setPropertyActionListener value="#{familytransaction}" target="#{familyBean.familytransaction}" />
+            	</p:commandLink>
+       		</p:column>
+       		<p:column headerText="Teacher">
+            	<p:commandLink value="#{familytransaction.semestercourseid.teacherid.firstname} #{familytransaction.semestercourseid.teacherid.lastname}"
+            		update="teacherDetailrow" style="color: blue"
+            		oncomplete="PF('teacherOProw').show('#{component.clientId}')">
+            		<f:setPropertyActionListener value="#{familytransaction}" target="#{familyBean.familytransaction}" />
+            	</p:commandLink>
+        	</p:column>
+        	<p:column styleClass="action-column">
+	            <f:facet name="header">
+	              <h:outputText value="Actions" />
+	            </f:facet>
+	            
+	            <p:commandButton id="listStudentAssignmentButton" icon="fa fa-fw fa-list" 
+	              update="listStudentClassAssignmentDialog"
+	              action="#{familyBean.onListClassAssignment}" 
+	              oncomplete="PF('listStudentClassAssignmentDialogWidget').show()" title="Class Assignments">
+	              <f:setPropertyActionListener value="#{familytransaction}" target="#{familyBean.familytransaction}" />
+	            </p:commandButton>
+	            <p:tooltip for="listStudentAssignmentButton" position="top" value="Class Assignments" showEffect="fade" hideEffect="fade" />
+	            
+	            <p:menuButton value="More">
+	              <p:menuitem value="Homepage" url="http://www.primefaces.org" target="_blank" icon="ui-icon-extlink"/>
+	            </p:menuButton>
+          </p:column>
+        </p:dataTable>
+	</p:panel>
+	  
+      
+</ui:composition>

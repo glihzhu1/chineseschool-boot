@@ -90,7 +90,7 @@
 			</f:facet>
 
 			<p:column headerText="Select Class" styleClass="action-column">
-            	<p:selectBooleanCheckbox rendered="#{not semestercourse.selected}" value="#{semestercourse.selected}" />
+            	<p:selectBooleanCheckbox value="#{semestercourse.selected}" />
         	</p:column>
         	
         	<p:column headerText="Need Book?" styleClass="action-column">
@@ -146,7 +146,7 @@
 	      <p:outputPanel id="deleteBookPanel">
 	        <h:form id="deleteBookForm">
 	          <p:commandButton id="deleteBookYesButton" value="#{messages.label_yes}" action="#{familyBean.deleteBookRegisteredCls}" 
-	          	update=":regiterStudentForm:regiterStudentPanelGrid" process="@this"
+	          	update="paypalPaymentForm:amtOriginalDue :regiterStudentForm:regiterStudentPanelGrid" process="@this"
 	          	oncomplete="PF('deleteBookDialogWidget').hide()" />
 	          <p:commandButton id="deleteBookNoButton" value="#{messages.label_no}" onclick="PF('deleteBookDialogWidget').hide()" type="button" />
 	          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -159,7 +159,7 @@
 	        <h:form id="addBookForm">
 	          <p:commandButton id="addBookYesButton" value="#{messages.label_yes}" process="@this"
 	            action="#{familyBean.addBookRegisteredCls}" 
-	          	update=":regiterStudentForm:regiterStudentPanelGrid" 
+	          	update="paypalPaymentForm:amtOriginalDue :regiterStudentForm:regiterStudentPanelGrid" 
 	          	oncomplete="PF('addBookDialogWidget').hide()" />
 	          <p:commandButton id="addBookNoButton" value="#{messages.label_no}" onclick="PF('addBookDialogWidget').hide()" type="button" />
 	          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
@@ -171,7 +171,7 @@
 	      <p:outputPanel id="deletePanel">
 	        <h:form id="deleteForm">
 	          <p:commandButton id="deleteYesButton" value="#{messages.label_yes}" action="#{familyBean.deleteRegisteredCls}" 
-	          	update=":regiterStudentForm:regiterStudentPanelGrid" process="@this"
+	          	update="paypalPaymentForm:amtOriginalDue :regiterStudentForm:regiterStudentPanelGrid" process="@this"
 	          	oncomplete="PF('deleteDialogWidget').hide()" />
 	          <p:commandButton id="deleteNoButton" value="#{messages.label_no}" onclick="PF('deleteDialogWidget').hide()" type="button" />
 	          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>

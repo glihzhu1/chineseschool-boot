@@ -1,15 +1,20 @@
 package com.xilin.management.school.web.util;
 
 import java.io.IOException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.GregorianCalendar;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.UUID;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -24,6 +29,7 @@ import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicHeader;
 import org.apache.log4j.Logger;
 import org.primefaces.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.MessageSource;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
@@ -41,7 +47,22 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.RestTemplate;
 
-import com.xilin.management.school.model.Student;
+import com.paypal.api.payments.Amount;
+import com.paypal.api.payments.CreateProfileResponse;
+import com.paypal.api.payments.Details;
+import com.paypal.api.payments.FuturePayment;
+import com.paypal.api.payments.InputFields;
+import com.paypal.api.payments.Item;
+import com.paypal.api.payments.ItemList;
+import com.paypal.api.payments.Links;
+import com.paypal.api.payments.Payer;
+import com.paypal.api.payments.Payment;
+import com.paypal.api.payments.PaymentExecution;
+import com.paypal.api.payments.RedirectUrls;
+import com.paypal.api.payments.Transaction;
+import com.paypal.api.payments.WebProfile;
+import com.paypal.base.rest.APIContext;
+import com.paypal.base.rest.PayPalRESTException;
 import com.xilin.management.school.web.reports.ExportingErrorException;
 import com.xilin.management.school.web.reports.JasperReportsExporter;
 
@@ -101,6 +122,7 @@ public class Utils {
     public static final String BILLING_STATUS_DEACTIVATED = "DEACTIVATED";
     
     public static final String BILLING_TYPE_PAYMENT = "PAYMENT";
+    public static final String BILLING_TYPE_PAYPAL = "Paypal";  
     public static final String BILLING_TYPE_CREDIT = "CREDIT";
     public static final String BILLING_TYPE_REFUND = "REFUND";
     public static final String BILLING_TYPE_FINE = "FINE";
@@ -113,6 +135,24 @@ public class Utils {
     //public static final String[] TABLE_FAMILY_COLUMNS = new String[] {"id", "fatherfirstname", "fatherlastname", "familyemail"};
     private static MessageSource messageSource;
     
+    public static final String[][] CLASS_ASSIGNMENT_CATEGORY_DEFAULT = 
+    		new String[][] {{"Home Work","20"},
+    						{"Quiz","20"},
+    						{"Midterm Exam","20"},
+    						{"Final Exam", "40"}};
+	
+	public static final String API_USERNAME_KEY = "API_USERNAME_KEY";
+	public static final String API_PASSWORD_KEY = "API_PASSWORD_KEY";
+	public static final String SPRING_MAIL_PASSWORD_KEY = "SPRING_MAIL_PASSWORD_KEY";
+	
+	//public static final String clientID = "AYSq3RDGsmBLJE-otTkBtM-jBRd1TCQwFf9RGfwddNXWz0uFU9ztymylOhRS";
+	//public static final String clientSecret = "EGnHDxD_qRPdaLdZz8iCr8N7_MzF-YHPTkjs6NKYQvQSBngp4PTTVWkPZRbL";
+	public static final String mode = "sandbox";
+	
+	public static final String clientID = "AcNNjLtjTzUHniqIgWhmpHwlLS6t3--VPI9T68GI5-TENP2sZuc17IqWU7BF_lVDoQCZxGPbvr1YBRoh";
+	public static final String clientSecret = "ECmKgBbtAEzHK8qi5IDOBZvCz91vjnxiSj8Tr0LZRSobDZ9Wr_9t-G_APHDdYPnvLUfM2z-moqbbLGh5";
+	
+	
     public static GregorianCalendar dateDaysAgo(int days) {
     	GregorianCalendar dataCalendar= new GregorianCalendar();
     	dataCalendar.add(GregorianCalendar.DAY_OF_YEAR, (-1) * days);
@@ -641,6 +681,151 @@ public class Utils {
 
 	public void setMessageSource(MessageSource messageSource) {
 		this.messageSource = messageSource;
+	}
+
+	/*public static String retrieveUserApiServerRestUsername() {
+		if(apiusername == null || apiusername.isEmpty()) {
+			return System.getenv(API_USERNAME_KEY);
+		}
+		else {
+			return apiusername;
+		}
+	}*/
+	
+	public static Payment createPayment(String amt, String currency) {
+		Payment createdPayment = null;
+		APIContext apiContext = new APIContext(clientID, clientSecret, mode);
+		
+
+		// ###Details
+		// Let's you specify details of a payment amount.
+		Details details = new Details();
+		//details.setShipping("0.00");
+		details.setSubtotal(amt);
+		//details.setTax("0.00");
+
+		// ###Amount
+		// Let's you specify a payment amount.
+		Amount amount = new Amount();
+		amount.setCurrency(currency);
+		// Total must be equal to sum of shipping, tax and subtotal.
+		amount.setTotal(amt);
+		amount.setDetails(details);
+
+		// ###Transaction
+		// A transaction defines the contract of a
+		// payment - what is the payment for and who
+		// is fulfilling it. Transaction is created with
+		// a `Payee` and `Amount` types
+		Transaction transaction = new Transaction();
+		transaction.setAmount(amount);
+		transaction
+				.setDescription("This is the payment transaction description.");
+
+		// ### Items
+		Item item = new Item();
+		item.setName("Class Registration").setQuantity("1").setCurrency(currency).setPrice(amt);
+		ItemList itemList = new ItemList();
+		List<Item> items = new ArrayList<Item>();
+		items.add(item);
+		itemList.setItems(items);
+		
+		transaction.setItemList(itemList);
+		
+		
+		// The Payment creation API requires a list of
+		// Transaction; add the created `Transaction`
+		// to a List
+		List<Transaction> transactions = new ArrayList<Transaction>();
+		transactions.add(transaction);
+
+		// ###Payer
+		// A resource representing a Payer that funds a payment
+		// Payment Method
+		// as 'paypal'
+		Payer payer = new Payer();
+		payer.setPaymentMethod("paypal");
+
+		// ###Payment
+		// A Payment Resource; create one using
+		// the above types and intent as 'sale'
+		Payment payment = new Payment();
+		payment.setIntent("sale");
+		payment.setPayer(payer);
+		payment.setTransactions(transactions);
+
+		// ###Redirect URLs
+		RedirectUrls redirectUrls = new RedirectUrls();
+		//String guid = UUID.randomUUID().toString().replaceAll("-", "");
+		/*redirectUrls.setCancelUrl(req.getScheme() + "://"
+				+ req.getServerName() + ":" + req.getServerPort()
+				+ req.getContextPath() + "/paymentwithpaypal?guid=" + guid);
+		redirectUrls.setReturnUrl(req.getScheme() + "://"
+				+ req.getServerName() + ":" + req.getServerPort()
+				+ req.getContextPath() + "/paymentwithpaypal?guid=" + guid);
+		payment.setRedirectUrls(redirectUrls);*/
+		redirectUrls.setCancelUrl("/pages/family/main.jsf");
+		redirectUrls.setReturnUrl("/pages/family/main.jsf");
+		
+		payment.setRedirectUrls(redirectUrls);
+		
+		try {
+			WebProfile profile = new WebProfile();
+			List<WebProfile> allProfiles = WebProfile.getList(apiContext);
+			if(allProfiles != null && allProfiles.size()>0) {
+				profile = allProfiles.get(0);
+				payment.setExperienceProfileId(profile.getId());
+			}
+			else {
+				InputFields inputfields = new InputFields();
+				inputfields.setNoShipping(1);
+				
+				profile.setName("xilin paypal profile");
+				profile.setInputFields(inputfields);
+				CreateProfileResponse rsp = profile.create(apiContext);
+				payment.setExperienceProfileId(rsp.getId());
+			}
+			createdPayment = payment.create(apiContext);
+					
+			Iterator<Links> links = createdPayment.getLinks().iterator();
+			while (links.hasNext()) {
+				Links link = links.next();
+				if (link.getRel().equalsIgnoreCase("approval_url")) {
+					//req.setAttribute("redirectURL", link.getHref());
+				}
+			}
+			//ResultPrinter.addResult(req, resp, "Payment with PayPal", Payment.getLastRequest(), Payment.getLastResponse(), null);
+			//map.put(guid, createdPayment.getId());
+		} catch (PayPalRESTException e) {
+			e.printStackTrace();
+			//ResultPrinter.addResult(req, resp, "Payment with PayPal", Payment.getLastRequest(), null, e.getMessage());
+		} catch (Exception e) {
+			e.printStackTrace();
+			//ResultPrinter.addResult(req, resp, "Payment with PayPal", Payment.getLastRequest(), null, e.getMessage());
+		}
+	
+		return createdPayment;
+	}
+	
+	public static Payment executePayment(String id, String payerId) {
+		Payment createdPayment = null;
+		APIContext apiContext = new APIContext(clientID, clientSecret, mode);
+		
+		if (payerId != null && payerId.length()>0) {
+			try {
+				Payment payment = new Payment();
+				payment.setId(id);
+				
+				PaymentExecution paymentExecution = new PaymentExecution();
+				paymentExecution.setPayerId(payerId);
+					
+				createdPayment = payment.execute(apiContext, paymentExecution);
+			} catch (PayPalRESTException e) {
+				e.printStackTrace();
+				//ResultPrinter.addResult(req, resp, "Payment with PayPal", Payment.getLastRequest(), null, e.getMessage());
+			}   
+		}
+		return createdPayment;
 	}
 
 }

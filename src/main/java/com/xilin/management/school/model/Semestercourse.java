@@ -27,7 +27,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 @Table(schema = "public",name = "semestercourse")
 public class Semestercourse {
 
-	@ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
+	//@ManyToOne(fetch=FetchType.EAGER, cascade=CascadeType.ALL)
+	@ManyToOne
     @JoinColumn(name = "bookitemid", referencedColumnName = "id")
     private Bookitem bookitemid;
 

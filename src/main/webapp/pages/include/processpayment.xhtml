@@ -12,6 +12,8 @@
 	      update=":processPaymentForm:billingDetailrow" 
 	      oncomplete="PF('billingDetailOP').show('#{component.clientId}')">
 	    </p:commandLink>
+	    
+	    
 	</h:panelGrid>
     
     <p:dataTable value="#{familyBean.familybillings}" rowKey="#{familybilling.id}"
@@ -58,9 +60,6 @@
           <p:tooltip for="editBillButton" position="top" value="#{messages.label_edit} Bill" showEffect="fade" hideEffect="fade" />
         </p:column>
    	</p:dataTable>
-   	
-   	
-   	
    	<h:outputText value="Below listed are details of your family registrations and book orders">
     </h:outputText>
   	<p:dataTable value="#{familyBean.registeredFamilytransactions}" rowKey="#{familytransaction.id}"

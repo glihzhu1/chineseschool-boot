@@ -3,7 +3,8 @@
       xmlns:f="http://java.sun.com/jsf/core"
       xmlns:h="http://java.sun.com/jsf/html"
       xmlns:ui="http://java.sun.com/jsf/facelets"
-      xmlns:p="http://primefaces.org/ui">
+      xmlns:p="http://primefaces.org/ui"
+      xmlns:pe="http://primefaces.org/ui/extensions">
 <ui:composition template="/templates/layout.xhtml">
   <ui:define name="content">
     <!-- 
@@ -160,7 +161,8 @@
 	    <h:commandButton id="listFamilyExportXlsButton" value="Export Excel"
 	        onclick="this.form.target='_blank'"
 	        action="#{applicationBean.exportFamiliesXls}" />
-        <!-- 
+        
+        <!--  
 	     <p:panel header="Export PDF" rendered="#{request.isUserInRole('ROLE_XILINADMIN')}">  
 	       <p:commandLink id="pdf" ajax="false">  
 	         <p:graphicImage value="/resources/images/pdf.png"/>  

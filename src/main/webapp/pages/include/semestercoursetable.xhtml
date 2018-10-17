@@ -11,7 +11,6 @@
         var="semestercourse" rendered="#{not empty semestercourseBean.allSemestercourses}" resizableColumns="true" 
         filteredValue="#{semestercourseBean.filteredSemestercourses}" widgetVar="semestercoursesTable"
         paginator="true" paginatorTemplate=" {CurrentPageReport}  {FirstPageLink} {PreviousPageLink} {PageLinks} {NextPageLink} {LastPageLink} {RowsPerPageDropdown}" rowsPerPageTemplate="15,20,50" rows="15">
-
 			<f:facet name="header">
 				<p:outputPanel rendered="#{request.isUserInRole('ROLE_XILINADMIN')}">
 					<h:outputText value="Search Semester courses:" />
@@ -72,7 +71,7 @@
               <h:outputText value="Actions" />
             </f:facet>
             
-            <p:commandButton id="listStudentButton" icon="fa fa-fw fa-edit" update=":listStudentForm:listStudentPanelGrid" 
+            <p:commandButton id="listStudentButton" icon="fa fa-fw fa-list" update=":listStudentForm:listStudentPanelGrid" 
               action="#{semestercourseBean.onListStudent}" oncomplete="PF('listStudentDialogWidget').show()" title="Class Students">
               <f:setPropertyActionListener value="#{semestercourse}" target="#{semestercourseBean.semestercourse}" />
             </p:commandButton>
@@ -86,6 +85,19 @@
                 <f:param name="semestercourserowid" value="#{semestercourse.id}"/>
               </p:menuitem>
               
+              <p:menuitem value="Manage Assignment" update="listClassAssignmentDialog"
+                rendered="#{request.isUserInRole('ROLE_XILINTEACHER')}"
+                oncomplete="PF('listClassAssignmentDialogWidget').show()"
+                actionListener="#{semestercourseBean.onListClassAssignment}" icon="fa fa-fw fa-wrench">
+                <f:param name="semestercourserowid" value="#{semestercourse.id}"/>
+              </p:menuitem>
+              
+              <p:menuitem value="Assignment Category" update=":manageAssignmentCategoryForm:manageAssignmentCategoryPanelGrid"
+                oncomplete="PF('manageAssignmentCategoryDialogWidget').show()"
+                actionListener="#{semestercourseBean.onManageAssignmentCategory}" icon="fa fa-fw fa-sitemap">
+                <f:param name="semestercourserowid" value="#{semestercourse.id}"/>
+              </p:menuitem>
+              
               <p:menuitem value="Close"
                 rendered="#{semestercourse.status ne 'Closed' and request.isUserInRole('ROLE_XILINADMIN')}"
                 oncomplete="PF('deactivateDialogWidget').show()"
@@ -95,8 +107,6 @@
               
               <p:menuitem value="Homepage" url="http://www.primefaces.org" target="_blank" icon="ui-icon-extlink"/>
             </p:menuButton>
-    
-          
           </p:column>
         </p:dataTable>
 	</p:panel>

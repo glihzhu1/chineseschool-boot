@@ -46,6 +46,14 @@ public class CustomUserDetailsService implements UserDetailsService {
     public UserDetails loadUserByUsername(final String username) {
     	TransientUser tuser = null;
     	
+    	if(apiusername == null || apiusername.isEmpty()) {
+			apiusername =  System.getenv(Utils.API_USERNAME_KEY);
+		}
+    	
+    	if(apipassword == null || apipassword.isEmpty()) {
+        	apipassword =  System.getenv(Utils.API_PASSWORD_KEY);
+		}
+    	
     	tuser = Utils.retrieveUserLoginIdExistJson(username.trim(), uri, apiusername, apipassword);
     	/*final String userLoadUri = uri +
 				"/allusers/loginId/" + username;

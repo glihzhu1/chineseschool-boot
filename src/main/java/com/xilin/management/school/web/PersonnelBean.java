@@ -105,7 +105,14 @@ public class PersonnelBean implements Serializable {
  
         teacherBoardModel.addColumn(column1);
         teacherBoardModel.addColumn(column2);
-		
+        
+        if(apiusername == null || apiusername.isEmpty()) {
+			apiusername =  System.getenv(Utils.API_USERNAME_KEY);
+		}
+        
+        if(apipassword == null || apipassword.isEmpty()) {
+        	apipassword =  System.getenv(Utils.API_PASSWORD_KEY);
+		}
     }
 
 	public String getName() {

@@ -43,6 +43,10 @@ import org.springframework.web.jsf.FacesContextUtils;
 
 import com.xilin.management.school.model.Bookitem;
 import com.xilin.management.school.model.BookitemRepository;
+import com.xilin.management.school.model.Classassignment;
+import com.xilin.management.school.model.ClassassignmentRepository;
+import com.xilin.management.school.model.Classassignmentstudentgrade;
+import com.xilin.management.school.model.ClassassignmentstudentgradeRepository;
 import com.xilin.management.school.model.Family;
 import com.xilin.management.school.model.FamilyRepository;
 import com.xilin.management.school.model.Familybilling;
@@ -106,6 +110,12 @@ public class FamilyBean implements Serializable {
 	private FamilybillingRepository familybillingRepository;
 	
 	@Autowired
+	private ClassassignmentRepository classassignmentRepository;
+	
+	@Autowired
+	private ClassassignmentstudentgradeRepository classassignmentstudentgradeRepository;
+	
+	@Autowired
 	private MyCustomSchoolService myCustomSchoolService;
 	
 	@Value("${user.api.server.rest.uri}")
@@ -164,6 +174,11 @@ public class FamilyBean implements Serializable {
 	private Semester latestSemester;
 	private boolean showChecknum;
 	
+	private List<Classassignment> selectedClassassignment;
+	
+	private List<Classassignmentstudentgrade> selectedClassassignmentstudentgrade;
+	private Classassignmentstudentgrade classassignmentstudentgrade;
+	
 	private DashboardModel boardModel;
 	
 	@PostConstruct
@@ -196,10 +211,16 @@ public class FamilyBean implements Serializable {
      			family = loginFamilies.get(0);
      			selectedStudents = studentRepository.findByFamilyid(family);
      		}
+     		updateFamilyRegistrationBilling();	
         }
         
-       
+        if(apiusername == null || apiusername.isEmpty()) {
+			apiusername =  System.getenv(Utils.API_USERNAME_KEY);
+		}
 		
+        if(apipassword == null || apipassword.isEmpty()) {
+        	apipassword =  System.getenv(Utils.API_PASSWORD_KEY);
+		}
     }
 
 	public String getName() {
@@ -299,7 +320,6 @@ public class FamilyBean implements Serializable {
 	public String persistUserChangePassword() {
         String message = "";
         String pwd = familyPassword;
-        //String loginId = family.getLoginId();
         
         //Check whether the external user id exist thru REST
 		if(!Utils.checkUserExternalIdExistJson(family.getExternaluserid(), uri, apiusername, apipassword)){
@@ -602,6 +622,8 @@ public class FamilyBean implements Serializable {
 		if(!newAddedCls.isEmpty()) {
 			myCustomSchoolService.saveStudentRegisteredFamilytransactions(newAddedCls);
 			registeredFamilytransactions.addAll(newAddedCls);  //Just refresh GUI
+			
+			updateFamilyRegistrationBilling();
 		}
 		
 		String message = "message_successfully_updated";
@@ -612,16 +634,7 @@ public class FamilyBean implements Serializable {
 	}
 	
 	public String onProcessPayment() {
-		Semester top1sem = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
-		if(top1sem != null)
-			latestSemester = top1sem;
-		
-		registeredFamilytransactions = 
-			familytransactionRepository.findBySemesteridAndFamilyidOrderByStudentidAsc(latestSemester, family);
-			
-		familybillings =
-			familybillingRepository.findBySemesteridAndFamilyidOrderByBillingtypeDesc(latestSemester, family);
-			
+		updateFamilyRegistrationBilling();	
 		return null;
 	}
 	
@@ -691,6 +704,13 @@ public class FamilyBean implements Serializable {
 		//deregisteredFamilytransactions.add(familytransaction);
 		
 		myCustomSchoolService.deleteRegisteredCls(familytransaction);
+		
+		for(Semestercourse cls : allSemestercourses) {
+			if(familytransaction.getSemestercourseid().getId() == cls.getId()) {
+				cls.setSelected(false);
+				break;
+			}
+		}
 		registeredFamilytransactions.remove(familytransaction);
 		
 	}
@@ -1131,7 +1151,8 @@ public class FamilyBean implements Serializable {
 	public BigDecimal getBillingBalance() {
 		BigDecimal billingBalance = new BigDecimal(0);
 		for(Familybilling bill : familybillings) {
-			if(bill.getBillingtype().equalsIgnoreCase(Utils.BILLING_TYPE_PAYMENT) 
+			if(bill.getBillingtype().equalsIgnoreCase(Utils.BILLING_TYPE_PAYMENT)
+				|| bill.getBillingtype().equalsIgnoreCase(Utils.BILLING_TYPE_PAYPAL)
 				|| bill.getBillingtype().equalsIgnoreCase(Utils.BILLING_TYPE_CREDIT)) {
 				billingBalance = billingBalance.add(bill.getAmount());
 			}
@@ -1415,16 +1436,7 @@ public class FamilyBean implements Serializable {
 		
 		if(loginFamilies != null && loginFamilies.size() > 0) {
 			family = loginFamilies.get(0);
-			Semester top1sem = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
-			if(top1sem != null)
-				latestSemester = top1sem;
-			
-			registeredFamilytransactions = 
-				familytransactionRepository.findBySemesteridAndFamilyidOrderByStudentidAsc(latestSemester, family);
-				
-			familybillings =
-				familybillingRepository.findBySemesteridAndFamilyidOrderByBillingtypeDesc(latestSemester, family);
-			
+			updateFamilyRegistrationBilling();
 		}
 		else {
 			// error msg
@@ -1435,6 +1447,48 @@ public class FamilyBean implements Serializable {
         return null;
     }
 	
+	public void onRowToggleStudent(ToggleEvent event) {
+		/*if(selectedClassassignmentstudentgrade != null && !selectedClassassignmentstudentgrade.isEmpty())
+			selectedClassassignmentstudentgrade.clear();
+		*/
+		student = (Student) event.getData();
+		
+		Semester top1sem = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
+		if(top1sem != null)
+			latestSemester = top1sem;
+		
+		registeredFamilytransactions = 
+				familytransactionRepository.findBySemesteridAndStudentidAndTransactiontype(latestSemester, student, Utils.FAMILY_TRANSACTION_REGISTER);
+		
+		//allSemestercourses = semestercourseRepository.findBySemesteridAndStudentid(latestSemester, student);
+		
+    }
+	
+	public String onListClassAssignment() {
+		//selectedClassassignment = classassignmentRepository.findBySemestercourse(familytransaction.getSemestercourseid());
+		selectedClassassignmentstudentgrade = 
+			classassignmentstudentgradeRepository.findByStudentAndClass(familytransaction.getStudentid(), familytransaction.getSemestercourseid());
+		
+        return null;
+    }
+	
+	public List<Classassignmentstudentgrade> getSelectedClassassignmentstudentgrade() {
+		return selectedClassassignmentstudentgrade;
+	}
+
+	public void setSelectedClassassignmentstudentgrade(
+			List<Classassignmentstudentgrade> selectedClassassignmentstudentgrade) {
+		this.selectedClassassignmentstudentgrade = selectedClassassignmentstudentgrade;
+	}
+
+	public Classassignmentstudentgrade getClassassignmentstudentgrade() {
+		return classassignmentstudentgrade;
+	}
+
+	public void setClassassignmentstudentgrade(Classassignmentstudentgrade classassignmentstudentgrade) {
+		this.classassignmentstudentgrade = classassignmentstudentgrade;
+	}
+
 	public boolean isShowChecknum() {
 		return showChecknum;
 	}
@@ -1475,5 +1529,25 @@ public class FamilyBean implements Serializable {
 		this.checkedPod = checkedPod;
 	}
 
+	public List<Classassignment> getSelectedClassassignment() {
+		return selectedClassassignment;
+	}
+
+	public void setSelectedClassassignment(List<Classassignment> selectedClassassignment) {
+		this.selectedClassassignment = selectedClassassignment;
+	}
+
+	private void updateFamilyRegistrationBilling() {
+		Semester top1sem = semesterRepository.findFirstByOrderByRegisterstartdateDesc();
+		if(top1sem != null)
+			latestSemester = top1sem;
+		
+		registeredFamilytransactions = 
+			familytransactionRepository.findBySemesteridAndFamilyidOrderByStudentidAsc(latestSemester, family);
+			
+		familybillings =
+			familybillingRepository.findBySemesteridAndFamilyidOrderByBillingtypeDesc(latestSemester, family);
+	}
+	
 	private static final long serialVersionUID = 1L;
 }

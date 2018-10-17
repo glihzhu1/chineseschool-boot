@@ -1,0 +1,163 @@
+<ui:composition xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+
+	<p:dataTable var="student" value="#{familyBean.selectedStudents}" 
+		emptyMessage="no students found for the family" rowKey="#{student.id}" 
+		rowExpandMode="single"
+	    selection="#{familyBean.student}" selectionMode="single"
+	    style="width:950px;">
+	    
+		<p:ajax event="rowToggle" listener="#{familyBean.onRowToggleStudent}" />
+        <p:column exportable="false" width="5%">
+			<p:rowToggler />
+		</p:column>
+		<p:column>
+			<f:facet name="header">
+				<h:outputText value="Student ID -Status" style="color: blue"></h:outputText>
+			</f:facet>
+			<h:outputText value="#{student.id}" />
+			<h:outputText value="#{student.active? ' -A' : ' -I'}" style="font-weight: bold; color: red;"/>
+		</p:column>
+		<p:column>
+			<f:facet name="header">
+				<h:outputText value="Name" style="color: blue"></h:outputText>
+			</f:facet>
+			<h:outputText value="#{student.firstname} #{student.lastname}" />
+		</p:column>
+		<p:column>
+			<f:facet name="header">
+				<h:outputText value="Chinese Name" style="color: blue"></h:outputText>
+			</f:facet>
+			<h:outputText value="#{student.chinesename}" />
+		</p:column>
+		<p:column>
+			<f:facet name="header">
+				<h:outputText value="Birth Date" style="color: blue"></h:outputText>
+			</f:facet>
+			<h:outputText value="#{student.dob.time}" >
+				<f:convertDateTime pattern="MM/dd/yyyy" type="date"/>
+			</h:outputText>
+		</p:column>
+		<p:column>
+			<f:facet name="header">
+				<h:outputText value="Gender" style="color: blue"></h:outputText>
+			</f:facet>
+			<h:outputText value="#{student.gender}" />
+		</p:column>
+		<p:column styleClass="action-column" rendered="#{request.isUserInRole('ROLE_XILINADMIN') or request.isUserInRole('ROLE_XILINFAMILY')}">
+	          <f:facet name="header">
+	            <h:outputText value="Actions" style="color: blue"/>
+	          </f:facet>
+	          <p:commandButton id="registerButton" icon="fa fa-fw fa-shopping-cart" 
+	            action="#{familyBean.onRegisterStudent}" title="Register Class" 
+	            update="regiterStudentDialog" 
+	            oncomplete="PF('regiterStudentDialogWidget').show();"
+	            rendered="#{student.active}">
+	            <f:setPropertyActionListener value="#{student}" target="#{familyBean.student}" />
+	          </p:commandButton>
+	          <p:tooltip for="registerButton" position="top" value="Register Class" showEffect="fade" hideEffect="fade" />
+	        
+	          <p:commandButton id="editStudentButton" icon="fa fa-fw fa-edit" action="#{familyBean.onEditStudent}"
+	         		update=":editStudentForm:editStudentPanelGrid" oncomplete="PF('editStudentDialogWidget').show()" title="#{messages.label_edit}">
+	           	  <f:setPropertyActionListener value="#{student}" target="#{familyBean.student}" />
+	          </p:commandButton>
+	          <p:tooltip for="editStudentButton" position="top" value="#{messages.label_edit} Student" showEffect="fade" hideEffect="fade" />
+	         
+	          
+	         	
+	        </p:column>
+	        
+	        <p:rowExpansion>
+			  <ui:include src="../include/semestercoursetablestudent.xhtml" />
+		    </p:rowExpansion>
+		  
+	    </p:dataTable>
+	    
+	<p:dialog id="listStudentClassAssignmentDialog" header="Student assignments for class #{familyBean.familytransaction.semestercourseid.semestercoursecode}"
+      width="1000" height="500"
+      modal="true" widgetVar="listStudentClassAssignmentDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      <p:outputPanel id="listClassAssignmentPanel">
+        <h:form id="listStudentClassAssignmentForm" enctype="multipart/form-data">
+          <p:panelGrid id="listStudentClassAssignmentPanelGrid" columns="1" styleClass="dialog">
+			<p:dataTable value="#{familyBean.selectedClassassignmentstudentgrade}" rowKey="#{classassignmentstudentgrade.id}"
+			        selection="#{familyBeanBean.classassignmentstudentgrade}" selectionMode="single" 
+			        var="classassignmentstudentgrade" emptyMessage="No assignment and grade available for the class"
+			     	resizableColumns="true" widgetVar="studentclassassignmentTable" >
+			      <p:column headerText="Description" >
+				   	<h:outputText id="assignmentDescription" value="#{classassignmentstudentgrade.classassignment.description}" />
+				  </p:column>
+				  <p:column headerText="Due Date" >
+				   	<h:outputText id="assignmentDueDate" value="#{classassignmentstudentgrade.classassignment.duedate.time}" >
+				   	  <f:convertDateTime pattern="MM/dd/yyyy" type="date"/>
+				   	</h:outputText>
+				  </p:column>
+				  <p:column headerText="External link" >
+				    <h:outputLink value="#{classassignmentstudentgrade.classassignment.externallink}"  
+				        target="_blank" style="color:blue;"
+		            	rendered="#{classassignmentstudentgrade.classassignment.externallink.toLowerCase().contains('http')}">
+		            	<h:outputText value="#{classassignmentstudentgrade.classassignment.externallink}" />
+		            </h:outputLink>
+				  </p:column>
+				  <p:column headerText="Your gradepoint" >
+				    <h:outputText id="earnedgradepoint" value="#{classassignmentstudentgrade.earnedgradepoint}" />
+				  </p:column>
+				  <p:column headerText="Full gradepoint" >
+				    <h:outputText id="fullgradepoint" value="#{classassignmentstudentgrade.classassignment.fullgradepoint}" />
+				  </p:column>
+				  <p:column headerText="Category" >
+				    <h:outputText id="assignmentcategory" value="#{classassignmentstudentgrade.classassignment.classassignmentcategory.description}" />
+				  </p:column>
+				  
+			 </p:dataTable>
+		  </p:panelGrid>
+	      
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
+    
+	    <p:overlayPanel widgetVar="teacherOProw" showEffect="fade" hideEffect="fade" dismissable="false" showCloseIcon="true">
+	    <p:outputPanel id="teacherDetailrow" style="text-align:center;">
+	      <p:panelGrid  columns="2">
+	        <f:facet name="header">
+	          <h:outputText value="Detail" />
+	        </f:facet>
+	 		<h:outputText value="Name:" />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.teacherid.lastname}, #{familyBean.familytransaction.semestercourseid.teacherid.firstname}" />
+	 		<h:outputText value="Email:" />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.teacherid.email}" />
+	        <h:outputText value="Home Phone: " />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.teacherid.homephone}" />
+	        <h:outputText value="Cell Phone: " />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.teacherid.cellphone}" />
+	 	  </p:panelGrid>
+	    </p:outputPanel>
+	  </p:overlayPanel>
+	  
+	    <p:overlayPanel widgetVar="bookitemOProw" showEffect="fade" hideEffect="fade" dismissable="false" showCloseIcon="true">
+	    <p:outputPanel id="bookitemDetailrow" style="text-align:center;">
+	      <p:panelGrid  columns="2">
+	        <f:facet name="header">
+	          <h:outputText value="Detail" />
+	        </f:facet>
+	        <h:outputText value="Book Code: " />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.bookitemid.bookcode}" />
+	 		<h:outputText value="Name:" />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.bookitemid.bookname}" />
+	 		<h:outputText value="Descriptionl:" />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.bookitemid.bookdescription}" />
+	        <h:outputText value="Price/Discount " />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.bookitemid.bookprice}/#{familyBean.familytransaction.semestercourseid.bookitemid.bookdiscountprice}" />
+	        <h:outputText value="Stock/Sold:" />
+	        <h:outputText value="#{familyBean.familytransaction.semestercourseid.bookitemid.amountinstock}/#{familyBean.familytransaction.semestercourseid.bookitemid.amountsold}" />
+	        
+	      </p:panelGrid>
+	    </p:outputPanel>
+	  </p:overlayPanel>
+	
+</ui:composition>

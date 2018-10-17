@@ -2,6 +2,7 @@ package com.xilin.management.school.web;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.GregorianCalendar;
 import java.util.List;
 import java.util.Locale;
@@ -9,14 +10,10 @@ import java.util.Map;
 
 import javax.annotation.PostConstruct;
 import javax.faces.application.FacesMessage;
-import javax.faces.bean.ManagedBean;
-import javax.faces.bean.SessionScoped;
 import javax.faces.context.FacesContext;
 import javax.faces.event.ActionEvent;
 import javax.faces.event.ValueChangeEvent;
 import javax.faces.model.SelectItem;
-import javax.faces.model.SelectItemGroup;
-import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hibernate.validator.internal.constraintvalidators.EmailValidator;
@@ -25,21 +22,22 @@ import org.primefaces.event.CloseEvent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Configurable;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 import org.springframework.web.jsf.FacesContextUtils;
 
-import com.xilin.management.school.web.reports.JasperReportsPdfExporter;
-import com.xilin.management.school.web.reports.JasperReportsXlsExporter;
 import com.xilin.management.school.model.Bookitem;
 import com.xilin.management.school.model.BookitemRepository;
+import com.xilin.management.school.model.Classassignment;
+import com.xilin.management.school.model.ClassassignmentRepository;
+import com.xilin.management.school.model.Classassignmentcategory;
+import com.xilin.management.school.model.ClassassignmentcategoryRepository;
+import com.xilin.management.school.model.Classassignmentstudentgrade;
+import com.xilin.management.school.model.ClassassignmentstudentgradeRepository;
 import com.xilin.management.school.model.Courseinformation;
 import com.xilin.management.school.model.CourseinformationRepository;
-import com.xilin.management.school.model.Family;
 import com.xilin.management.school.model.Familytransaction;
 import com.xilin.management.school.model.FamilytransactionRepository;
 import com.xilin.management.school.model.MyCustomSchoolService;
@@ -51,7 +49,8 @@ import com.xilin.management.school.model.Semestercourse;
 import com.xilin.management.school.model.SemestercourseRepository;
 import com.xilin.management.school.model.Student;
 import com.xilin.management.school.model.StudentRepository;
-import com.xilin.management.school.web.reports.JasperReportsExporter;
+import com.xilin.management.school.web.reports.JasperReportsPdfExporter;
+import com.xilin.management.school.web.reports.JasperReportsXlsExporter;
 import com.xilin.management.school.web.util.MessageFactory;
 import com.xilin.management.school.web.util.Utils;
 
@@ -85,6 +84,15 @@ public class SemestercourseBean implements Serializable {
 	private CourseinformationRepository courseinformationRepository;
 	
 	@Autowired
+	private ClassassignmentcategoryRepository classassignmentcategoryRepository;
+	
+	@Autowired
+	private ClassassignmentRepository classassignmentRepository;
+	
+	@Autowired
+	private ClassassignmentstudentgradeRepository classassignmentstudentgradeRepository;
+	
+	@Autowired
     MyCustomSchoolService myCustomSchoolService;
 	
 	private String name = "Semestercourses";
@@ -102,6 +110,7 @@ public class SemestercourseBean implements Serializable {
 	private List<SelectItem> courseinfoDropdown;
 	private List<SelectItem> teacherDropdown;
 	private List<SelectItem> bookitemDropdown;
+	private List<SelectItem> classAssignmentCategoryDropdown;
 	private Integer semesterId;
 	private Integer courseinfoId;
 	private Integer teacherId;
@@ -113,6 +122,13 @@ public class SemestercourseBean implements Serializable {
 	private String semesterCourseAction;
 	private List<Student> selectedStudents;
 	private Student student;
+	private List<Classassignmentcategory> selectedClassassignmentcategory;
+	private Classassignmentcategory classassignmentcategory;
+	private List<Classassignment> selectedClassassignment;
+	private Classassignment classassignment;
+	private Integer classassignmentcategoryId;
+	private List<Classassignmentstudentgrade> selectedClassassignmentstudentgrade;
+	private Classassignmentstudentgrade classassignmentstudentgrade;
 	
 	private boolean emailStudentDialogVisible = false;
 	private boolean emailStudentDialogOneVisible = false;
@@ -262,7 +278,188 @@ public class SemestercourseBean implements Serializable {
 	public void setToStudentEmailMsg(String toStudentEmailMsg) {
 		this.toStudentEmailMsg = toStudentEmailMsg;
 	}
+	
+	/*public void onRowToggle(ToggleEvent event) {
+		semestercourse = (Semestercourse) event.getData();
+		if(semestercourse != null) {
+			selectedStudents = studentRepository.queryAllStudentsForClass(semestercourse);
+		}
+        FacesMessage msg = new FacesMessage(FacesMessage.SEVERITY_INFO, "Selected Class", "Code:" + semestercourse.getSemestercoursecode());
+        FacesContext.getCurrentInstance().addMessage(null, msg);
+    }*/
+	
+	public void onGradeAllStudents() {
+		String loginUsername = Utils.retrieveLoginUsername();
+        Calendar calendar = GregorianCalendar.getInstance();
+        
+		if(classassignment != null) {
+			selectedStudents = studentRepository.queryAllStudentsForClass(classassignment.getSemestercourse());
+			//retrieve previous grades for all students of the class
+			selectedClassassignmentstudentgrade = classassignmentstudentgradeRepository.findByClassassignment(classassignment);
+	    }
+		
+		if(selectedClassassignmentstudentgrade == null || 
+				selectedClassassignmentstudentgrade.isEmpty()) {
+			selectedClassassignmentstudentgrade = new ArrayList<Classassignmentstudentgrade>();
+			if(selectedStudents != null && !selectedStudents.isEmpty()) {
+				for(Student stu: selectedStudents) {
+					Classassignmentstudentgrade grade = new Classassignmentstudentgrade();
+					grade.setClassassignment(classassignment);
+					grade.setEarnedgradepoint(new BigDecimal("0.0"));
+					grade.setStudent(stu);
+					grade.setUpdatedby(loginUsername);
+					grade.setUpdatedtime(calendar);
+					selectedClassassignmentstudentgrade.add(grade);
+				}
+			}
+		}
+		else {
+			if(selectedStudents != null && !selectedStudents.isEmpty()) {
+				List<Classassignmentstudentgrade> newGradeNeeded = 
+						new ArrayList<Classassignmentstudentgrade>();
+				for(Student stu: selectedStudents) {
+					boolean studentHasGrade = false;
+					for(Classassignmentstudentgrade agrade: selectedClassassignmentstudentgrade) {
+						if(agrade.getStudent().getId().compareTo(stu.getId()) == 0) {
+							studentHasGrade = true;
+							break;
+						}
+					}
+					if(!studentHasGrade) {
+						Classassignmentstudentgrade grade = new Classassignmentstudentgrade();
+						grade.setClassassignment(classassignment);
+						grade.setEarnedgradepoint(new BigDecimal("0.0"));
+						grade.setStudent(stu);
+						grade.setUpdatedby(loginUsername);
+						grade.setUpdatedtime(calendar);
+						newGradeNeeded.add(grade);
+					}
+				}
+				
+				if(!newGradeNeeded.isEmpty()) {
+					selectedClassassignmentstudentgrade.addAll(newGradeNeeded);
+				}
+			}
+		}
+	}
+	
+	public void gradeAllStudents() {
+        classassignmentstudentgradeRepository.save(selectedClassassignmentstudentgrade);
+        //semestercourseRepository.saveAndFlush(semestercourse);
+        
+    	RequestContext context = RequestContext.getCurrentInstance();
+        context.execute("PF('gradeAllStudentsDialogWidget').hide()");
+    	//classassignment = null;
+    	
+    	String message = "message_successfully_updated";
+		FacesMessage facesMessage = MessageFactory.getMessage(message, "Grade");
+        FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+        
+	}
+	
+	public void onAddClassAssignment() {
+		selectedClassassignmentcategory = classassignmentcategoryRepository.findBySemestercourse(semestercourse);
+		
+		classAssignmentCategoryDropdown = new ArrayList<SelectItem>();
+		if(selectedClassassignmentcategory != null && !selectedClassassignmentcategory.isEmpty()) {
+			for(Classassignmentcategory itm : selectedClassassignmentcategory) {
+				SelectItem item = new SelectItem(itm.getId(), 
+						itm.getDescription());
+				classAssignmentCategoryDropdown.add(item);
+			}
+		}
+		classassignment = new Classassignment();
+		classassignment.setSemestercourse(semestercourse);
+		classassignment.setDuedate(GregorianCalendar.getInstance());
+	}
+	
+	public void addClassAssignment() {
+    	String loginUsername = Utils.retrieveLoginUsername();
+        Calendar calendar = GregorianCalendar.getInstance();
+        classassignment.setUpdatedby(loginUsername);
+        classassignment.setUpdatedtime(calendar);
+        
+        classassignmentcategory = classassignmentcategoryRepository.findOne(classassignmentcategoryId);
+        
+        if(classassignmentcategory != null)
+        	classassignment.setClassassignmentcategory(classassignmentcategory);
+        
+        classassignmentRepository.save(classassignment);
+		
+        selectedClassassignment.add(classassignment);
+        
+    	RequestContext context = RequestContext.getCurrentInstance();
+        context.execute("PF('addClassAssignmentDialogWidget').hide()");
+        
+    	String message = "message_successfully_updated";
+		FacesMessage facesMessage = MessageFactory.getMessage(message, "Assignment");
+        FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+        
+	}
+	
+	public String onListClassAssignment() {
+		Map<String,String> params =
+			FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
 
+		String semestercourserowid = params.get("semestercourserowid");
+			
+		semestercourse = semestercourseRepository.findOne(Integer.valueOf(semestercourserowid));
+			
+		selectedClassassignment = classassignmentRepository.findBySemestercourse(semestercourse);
+		
+        return null;
+    }
+	
+	public String batchAssignmentCategoryUpdate() {
+		String username = Utils.retrieveLoginUsername();
+		Calendar cal = GregorianCalendar.getInstance();
+		
+		utilBatchClassassignmentcategoryUpdate(selectedClassassignmentcategory, username, cal);
+		
+		String message = "message_successfully_updated";
+		FacesMessage facesMessage = MessageFactory.getMessage(message, "Assignment Category");
+        FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+        
+        return null;
+	}
+	
+	public void onAddAssignmentCategory() {
+		classassignmentcategory = new Classassignmentcategory();
+		classassignmentcategory.setSemestercourse(semestercourse);
+	}
+	
+	public void addClassAssignmentCategory() {
+    	String loginUsername = Utils.retrieveLoginUsername();
+        Calendar calendar = GregorianCalendar.getInstance();
+        classassignmentcategory.setUpdatedby(loginUsername);
+        classassignmentcategory.setUpdatedtime(calendar);
+        classassignmentcategoryRepository.save(classassignmentcategory);
+		
+        selectedClassassignmentcategory.add(classassignmentcategory);
+        
+    	RequestContext context = RequestContext.getCurrentInstance();
+        context.execute("PF('addAssignmentCategoryDialogWidget').hide()");
+        
+    	String message = "message_successfully_updated";
+		FacesMessage facesMessage = MessageFactory.getMessage(message, "Assignment Category");
+        FacesContext.getCurrentInstance().addMessage(null, facesMessage);
+        
+	}
+	
+	public String onManageAssignmentCategory() {
+		Map<String,String> params =
+			FacesContext.getCurrentInstance().getExternalContext().getRequestParameterMap();
+
+		String semestercourserowid = params.get("semestercourserowid");
+			
+		semestercourse = semestercourseRepository.findOne(Integer.valueOf(semestercourserowid));
+			
+		//retrieve all its classassignmentcategories
+		selectedClassassignmentcategory = classassignmentcategoryRepository.findBySemestercourse(semestercourse);
+		
+        return null;
+    }
+	
 	public String onEdit() {
 		prepareClassNeededDropdowns();
 		
@@ -502,6 +699,19 @@ public class SemestercourseBean implements Serializable {
         	semestercourse.setUpdatedtime(GregorianCalendar.getInstance());
         	semestercourse = semestercourseRepository.save(semestercourse);
 	        
+        	//also create classassignmentcategory -- default
+        	List<Classassignmentcategory> defaultcategory = new ArrayList<Classassignmentcategory>();
+        	for(String[] cat: Utils.CLASS_ASSIGNMENT_CATEGORY_DEFAULT) {
+        		Classassignmentcategory assignmentcat = new Classassignmentcategory();
+        		assignmentcat.setDescription(cat[0]);
+        		assignmentcat.setGradepercentage(Integer.valueOf(cat[1]));
+        		assignmentcat.setSemestercourse(semestercourse);
+        		assignmentcat.setUpdatedby(loginUsername);
+        		assignmentcat.setUpdatedtime(GregorianCalendar.getInstance());
+        		defaultcategory.add(assignmentcat);
+        	}
+        	classassignmentcategoryRepository.save(defaultcategory);
+        	
             message = "message_successfully_created";
         }
         RequestContext context = RequestContext.getCurrentInstance();
@@ -550,7 +760,7 @@ public class SemestercourseBean implements Serializable {
 	}
 	
 	public void reset() {
-        semestercourse = null;
+        //semestercourse = null;
         createDialogVisible = false;
     }
 
@@ -558,6 +768,19 @@ public class SemestercourseBean implements Serializable {
         reset();
     }
 
+	private void utilBatchClassassignmentcategoryUpdate(List<Classassignmentcategory> cats, String username, Calendar cal) {
+		for(int index=0; index<cats.size(); index++) {
+			Classassignmentcategory cat = cats.get(index);
+			
+			cat.setUpdatedby(username);
+			cat.setUpdatedtime(cal);
+		}
+		
+		if(!cats.isEmpty()) {
+			classassignmentcategoryRepository.save(cats);
+		}
+	}
+	
 	private void prepareClassNeededDropdowns() {
 		semesterDropdown = myCustomSchoolService.queryTop2SemesterItems();
 		courseinfoDropdown = myCustomSchoolService.queryAllCourseinformationItems();
@@ -750,6 +973,74 @@ public class SemestercourseBean implements Serializable {
 
 	public void setSemesterCourseAction(String semesterCourseAction) {
 		this.semesterCourseAction = semesterCourseAction;
+	}
+
+
+	public List<Classassignmentcategory> getSelectedClassassignmentcategory() {
+		return selectedClassassignmentcategory;
+	}
+
+	public void setSelectedClassassignmentcategory(List<Classassignmentcategory> selectedClassassignmentcategory) {
+		this.selectedClassassignmentcategory = selectedClassassignmentcategory;
+	}
+
+	public Classassignmentcategory getClassassignmentcategory() {
+		return classassignmentcategory;
+	}
+
+	public void setClassassignmentcategory(Classassignmentcategory classassignmentcategory) {
+		this.classassignmentcategory = classassignmentcategory;
+	}
+
+
+	public List<Classassignment> getSelectedClassassignment() {
+		return selectedClassassignment;
+	}
+
+	public void setSelectedClassassignment(List<Classassignment> selectedClassassignment) {
+		this.selectedClassassignment = selectedClassassignment;
+	}
+
+	public Classassignment getClassassignment() {
+		return classassignment;
+	}
+
+	public void setClassassignment(Classassignment classassignment) {
+		this.classassignment = classassignment;
+	}
+
+
+	public Integer getClassassignmentcategoryId() {
+		return classassignmentcategoryId;
+	}
+
+	public void setClassassignmentcategoryId(Integer classassignmentcategoryId) {
+		this.classassignmentcategoryId = classassignmentcategoryId;
+	}
+
+	public List<SelectItem> getClassAssignmentCategoryDropdown() {
+		return classAssignmentCategoryDropdown;
+	}
+
+	public void setClassAssignmentCategoryDropdown(List<SelectItem> classAssignmentCategoryDropdown) {
+		this.classAssignmentCategoryDropdown = classAssignmentCategoryDropdown;
+	}
+
+	public List<Classassignmentstudentgrade> getSelectedClassassignmentstudentgrade() {
+		return selectedClassassignmentstudentgrade;
+	}
+
+	public void setSelectedClassassignmentstudentgrade(
+			List<Classassignmentstudentgrade> selectedClassassignmentstudentgrade) {
+		this.selectedClassassignmentstudentgrade = selectedClassassignmentstudentgrade;
+	}
+
+	public Classassignmentstudentgrade getClassassignmentstudentgrade() {
+		return classassignmentstudentgrade;
+	}
+
+	public void setClassassignmentstudentgrade(Classassignmentstudentgrade classassignmentstudentgrade) {
+		this.classassignmentstudentgrade = classassignmentstudentgrade;
 	}
 
 

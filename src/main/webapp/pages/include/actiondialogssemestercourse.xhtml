@@ -6,7 +6,240 @@
 	xmlns:fn="http://java.sun.com/jsp/jstl/functions"
 	xmlns:pe="http://primefaces.org/ui/extensions">
 	
-	
+	<p:dialog id="listClassAssignmentDialog" header="Manage assignments for class #{semestercourseBean.semestercourse.semestercoursecode}"
+      width="1000" height="500"
+      modal="true" widgetVar="listClassAssignmentDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      <p:outputPanel id="listClassAssignmentPanel">
+        <h:form id="listClassAssignmentForm" enctype="multipart/form-data">
+          <p:commandButton value="New Assignment" 
+	        oncomplete="PF('addClassAssignmentDialogWidget').show()" 
+		    update="addClassAssignmentDialog"
+		    actionListener="#{semestercourseBean.onAddClassAssignment}" />
+		  <p:panelGrid id="listClassAssignmentPanelGrid" columns="1" styleClass="dialog">
+			<p:dataTable value="#{semestercourseBean.selectedClassassignment}" rowKey="#{classassignment.id}"
+			        selection="#{semestercourseBean.classassignment}" selectionMode="single" 
+			        rowExpandMode="single"
+			        var="classassignment" emptyMessage="No assignment defined for the class"
+			     	resizableColumns="true" widgetVar="classassignmentTable" >
+			      <p:column headerText="Description" >
+				   	<h:outputText id="assignmentDescription" value="#{classassignment.description}" />
+				  </p:column>
+				  <p:column headerText="Due Date" >
+				   	<h:outputText id="assignmentDueDate" value="#{classassignment.duedate.time}" >
+				   	  <f:convertDateTime pattern="MM/dd/yyyy" type="date"/>
+				   	</h:outputText>
+				  </p:column>
+				  <p:column headerText="External link" >
+				    <h:outputLink value="#{classassignment.externallink}"  target="_blank" style="color:blue;"
+		            	rendered="#{classassignment.externallink.toLowerCase().contains('http')}">
+		            	<h:outputText id="assignmentExternallink" value="#{classassignment.externallink}" />
+		            </h:outputLink>
+				  </p:column>
+				  <p:column headerText="Full gradepoint" >
+				    <h:outputText id="fullgradepoint" value="#{classassignment.fullgradepoint}" />
+				  </p:column>
+				  <p:column headerText="Category" >
+				    <h:outputText id="assignmentcategory" value="#{classassignment.classassignmentcategory.description}" />
+				  </p:column>
+				  <p:column styleClass="action-column">
+		            <f:facet name="header">
+		              <h:outputText value="Actions" />
+		            </f:facet>
+		            <p:commandButton id="gradeAllStudentsButton" icon="fa fa-fw fa-wrench"
+		              action="#{semestercourseBean.onGradeAllStudents}" update="gradeAllStudentsDialog"
+		              oncomplete="PF('gradeAllStudentsDialogWidget').show()" title="#{messages.label_create}">
+		              <f:setPropertyActionListener value="#{classassignment}" target="#{semestercourseBean.classassignment}" />
+		            </p:commandButton>
+		            <p:tooltip for="gradeAllStudentsButton" position="top" value="Grade Students" showEffect="fade" hideEffect="fade" />
+		            
+		            <p:menuButton value="More">
+						
+		      		</p:menuButton>
+				</p:column>
+				  
+			 </p:dataTable>
+		  </p:panelGrid>
+	      
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    <p:dialog id="gradeAllStudentsDialog" header="Grade assignment #{semestercourseBean.classassignment.description} with #{semestercourseBean.classassignment.fullgradepoint} points" modal="true" widgetVar="gradeAllStudentsDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      <p:outputPanel id="gradeAllStudentsPanel">
+        <h:form id="gradeAllStudentsForm" enctype="multipart/form-data">
+          <div style="text-align: right;">
+            <p:commandButton value="Confirm Updates" update="gradeAllStudentsDialog :growlForm:growl"
+              actionListener="#{semestercourseBean.gradeAllStudents}" />
+          </div>
+          <p:panel id="gradeAllStudentsPanelGrid">  
+            <p:dataTable var="classassignmentstudentgrade" value="#{semestercourseBean.selectedClassassignmentstudentgrade}" 
+				emptyMessage="no student grades found for the class" 
+		             
+		             style="width:800px;">
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Student ID" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{classassignmentstudentgrade.student.id}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Name" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{classassignmentstudentgrade.student.firstname} #{classassignmentstudentgrade.student.lastname}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Family Email" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{classassignmentstudentgrade.student.familyid.email}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Grade Points" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:inputText value="#{classassignmentstudentgrade.earnedgradepoint}" />
+				</p:column>
+				<p:column>
+					<f:facet name="header">
+						<h:outputText value="Birth Date" style="color: blue"></h:outputText>
+					</f:facet>
+					<h:outputText value="#{classassignmentstudentgrade.student.dob.time}" >
+						<f:convertDateTime pattern="MM/dd/yyyy" type="date"/>
+					</h:outputText>
+				</p:column>
+				
+		    </p:dataTable>
+	      </p:panel>
+	      <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
+    <p:dialog id="addClassAssignmentDialog" header="#{messages.label_create} assignment for class #{semestercourseBean.semestercourse.semestercoursecode}" modal="true" 
+      widgetVar="addClassAssignmentDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      <p:ajax event="close" update=":listClassAssignmentForm:listClassAssignmentPanelGrid" />
+      <p:outputPanel id="addClassAssignmentPanel">
+        <h:form id="addClassAssignmentForm" enctype="multipart/form-data">
+          <h:panelGrid id="addClassAssignmentPanelGrid" columns="1" styleClass="dialog" columnClasses="col1" >
+            <h:panelGrid columns="4" styleClass="dialog">
+              <h:outputText value="Description"/>
+              <p:spacer width="10" height="10"></p:spacer>
+	  		  <p:inputText id="assignmentdescriptionInput" value="#{semestercourseBean.classassignment.description}" 
+                required="true" requiredMessage="Description is required"/>
+	  		  <p:message for="assignmentdescriptionInput"></p:message>
+	  		  
+	  		  <h:outputText value="Category"/>
+	  		  <p:spacer width="10" height="10"></p:spacer>
+	  		  <p:selectOneMenu size="1" id="classAssignmentCategoryDropdown" 
+		  		value="#{semestercourseBean.classassignmentcategoryId}" >
+		  		<f:selectItems value="#{semestercourseBean.classAssignmentCategoryDropdown}" />
+	    	  </p:selectOneMenu>
+	    	  <p:spacer width="10" height="10"></p:spacer>
+	    	  
+	  		  <h:outputText value="Full Grade Point"/>
+              <p:spacer width="10" height="10"></p:spacer>
+              <p:inputText id="fullgradeInput" value="#{semestercourseBean.classassignment.fullgradepoint}" 
+                required="true" requiredMessage="grade number is required"/>
+	  		  <p:message for="fullgradeInput"></p:message>
+	  		  
+	  		  <h:outputText value="Due Date"/>
+	  		  <p:spacer width="10" height="10"></p:spacer>
+	          <p:calendar id="duedate" required="true" requiredMessage="due date is required"
+	          		value="#{semestercourseBean.classassignment.duedate.time}" pattern="MM/dd/yyyy" />
+	          <p:message for="duedate"></p:message>
+        	
+        	  <h:outputText value="External Link"/>
+              <p:spacer width="10" height="10"></p:spacer>
+	  		  <p:inputText id="assignmentexternallinkInput" value="#{semestercourseBean.classassignment.externallink}" />
+	  		  <p:spacer width="10" height="10"></p:spacer>
+	  		  
+            </h:panelGrid>
+          </h:panelGrid>
+          <p:commandButton id="addClassAssignmentSaveButton" value="#{messages.label_save}" 
+      	    process="addClassAssignmentForm" action="#{semestercourseBean.addClassAssignment}" 
+      	    update=":addClassAssignmentForm:addClassAssignmentPanelGrid :listClassAssignmentForm:listClassAssignmentPanelGrid :growlForm:growl" />
+          <p:commandButton id="addClassAssignmentCloseButton" value="#{messages.label_close}" onclick="PF('addClassAssignmentDialogWidget').hide()" type="button" />
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
+	<p:dialog id="manageAssignmentCategoryDialog" header="Manage assignment category for class #{semestercourseBean.semestercourse.semestercoursecode}"
+      width="1000" height="500"
+      modal="true" widgetVar="manageAssignmentCategoryDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      <p:outputPanel id="manageAssignmentCategoryPanel">
+        <h:form id="manageAssignmentCategoryForm" enctype="multipart/form-data">
+          <p:commandButton value="New Category" 
+	        oncomplete="PF('addAssignmentCategoryDialogWidget').show()" 
+		    update="addAssignmentCategoryDialog"
+		    actionListener="#{semestercourseBean.onAddAssignmentCategory}" />
+	  	  <p:commandButton value="Confirm Updates" action="#{semestercourseBean.batchAssignmentCategoryUpdate}"
+	        process=":manageAssignmentCategoryForm:manageAssignmentCategoryPanelGrid @this" update="manageAssignmentCategoryPanelGrid :growlForm:growl" />
+          
+          <p:panelGrid id="manageAssignmentCategoryPanelGrid" columns="1" styleClass="dialog">
+			
+		    <p:dataTable value="#{semestercourseBean.selectedClassassignmentcategory}" rowKey="#{classassignmentcategory.id}"
+			        selection="#{semestercourseBean.classassignmentcategory}" selectionMode="single" 
+			        rowExpandMode="single"
+			        var="classassignmentcategory" emptyMessage="No category defined for the class"
+			     	resizableColumns="true" widgetVar="classassignmentcategoryTable" >
+			    <f:facet name="header">
+			      You can make batch updates of categories and in-place percentage changes. <br/>
+			      If you no longer need an entry or it is not counted toward grading, input 0 for its percentage. <br/>
+			      It is good practice to make sure total is 100%.<br/>
+			    </f:facet> 
+			    <!--  	
+			    <p:ajax event="rowEdit" listener="#{semesterBean.onRowEdit}" update=":growlForm:growl" />
+			    <p:ajax event="rowEditCancel" listener="#{semesterBean.onRowCancel}" update=":growlForm:growl" />
+			 	
+			 	<p:ajax event="cellEdit" listener="#{semesterBean.onCellEdit}" update=":growlForm:growl" />
+			 	-->
+				  <p:column headerText="Description" >
+				   	<h:outputText id="categoryDescription" value="#{classassignmentcategory.description}" />
+				  </p:column>
+				  <p:column headerText="Percentage %" >
+				    <p:inputText id="categoryPercentage" value="#{classassignmentcategory.gradepercentage}" />
+				  </p:column>
+				  
+			 </p:dataTable>
+		  </p:panelGrid>
+	      
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
+    <p:dialog id="addAssignmentCategoryDialog" header="#{messages.label_create} category for class #{semestercourseBean.semestercourse.semestercoursecode}" modal="true" 
+      widgetVar="addAssignmentCategoryDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      <p:ajax event="close" update=":manageAssignmentCategoryForm:manageAssignmentCategoryPanelGrid" />
+      <p:outputPanel id="addAssignmentCategoryPanel">
+        <h:form id="addAssignmentCategoryForm" enctype="multipart/form-data">
+          <h:panelGrid id="addAssignmentCategoryPanelGrid" columns="1" styleClass="dialog" columnClasses="col1" >
+            <h:panelGrid columns="4" styleClass="dialog">
+              <h:outputText value="Description"/>
+              <p:spacer width="10" height="10"></p:spacer>
+	  		  <p:inputText id="descriptionInput" value="#{semestercourseBean.classassignmentcategory.description}" 
+                required="true" requiredMessage="Description is required"/>
+	  		  <p:message for="descriptionInput"></p:message>
+	  		  
+	  		  <h:outputText value="Percentage"/>
+              <p:spacer width="10" height="10"></p:spacer>
+              <p:inputText id="percentageInput" value="#{semestercourseBean.classassignmentcategory.gradepercentage}" 
+                required="true" requiredMessage="percentage is required"/>
+	  		  <p:message for="percentageInput"></p:message>
+	  		  
+            </h:panelGrid>
+          </h:panelGrid>
+          <p:commandButton id="addAssignmentCategorySaveButton" value="#{messages.label_save}" 
+      	    process="addAssignmentCategoryForm" action="#{semestercourseBean.addClassAssignmentCategory}" 
+      	    update=":addAssignmentCategoryForm:addAssignmentCategoryPanelGrid :manageAssignmentCategoryForm:manageAssignmentCategoryPanelGrid :growlForm:growl" />
+          <p:commandButton id="addAssignmentCategoryCloseButton" value="#{messages.label_close}" onclick="PF('addAssignmentCategoryDialogWidget').hide()" type="button" />
+          <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
+        </h:form>
+      </p:outputPanel>
+    </p:dialog>
+    
     <p:dialog id="listStudentDialog" header="List Class Students" modal="true" widgetVar="listStudentDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
       <p:ajax event="close" update=":dataForm:data" listener="#{semestercourseBean.handleDialogClose}" />
       <p:outputPanel id="listStudentPanel">

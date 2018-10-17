@@ -366,6 +366,8 @@
     </p:dialog>
     <p:dialog id="processPaymentDialog" header="Payments for family with ID - #{familyBean.family.id}" width="1000" height="600" 
       modal="true" widgetVar="processPaymentDialogWidget" dynamic="true" resizable="true" maximizable="true" showEffect="fade" hideEffect="explode">
+      
+      
       <p:outputPanel id="processPaymentPanel">
         <h:form id="processPaymentForm" enctype="multipart/form-data">
           <p:commandButton value="New Bill" oncomplete="PF('createPaymentDialogWidget').show()"
@@ -670,7 +672,7 @@
 			<ui:include src="../include/registerclass.xhtml" />
 		  </p:panelGrid>
 	      
-	      <p:commandButton value="Confirm Selection" action="#{familyBean.regiterStudent}" update="regiterStudentPanelGrid :growlForm:growl" />
+	      <p:commandButton value="Confirm Selection" action="#{familyBean.regiterStudent}" update="paypalPaymentForm:amtOriginalDue regiterStudentPanelGrid :growlForm:growl" />
           <p:commandButton value="#{messages.label_close}" onclick="PF('regiterStudentDialogWidget').hide()" type="button" />
           
           <input type="hidden" name="${_csrf.parameterName}" value="${_csrf.token}"/>
