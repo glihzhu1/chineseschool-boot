@@ -23,10 +23,9 @@ import com.xilin.management.school.web.util.Utils;
 //import org.json.
 
 public class SomeTest {
-	//private static final String BASE_URL = "http://localhost:1990/confluence";
+	private static final String BASE_URL = "http://localhost:1990/confluence";
     //private static final String USERNAME = "admin";
     //private static final String PASSWORD = "admin";
-	private static final String BASE_URL = "https://confluence.cdk.com";
     private static final String USERNAME = "lig";
     private static final String PASSWORD = "Janu01-5";
     private static final String ENCODING = "utf-8";
